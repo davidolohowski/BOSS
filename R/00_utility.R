@@ -215,7 +215,7 @@ cov_generator <- function(length_scale = 1, signal_var = 1, nu = Inf) {
 #' @export
 predict_gp <- function(data,
                        x_pred,
-                       noise_var   = 1e-6,
+                       noise_var = 1e-6,
                        choice_cov,
                        quad = FALSE) {
   # Extract x and y
@@ -270,13 +270,18 @@ predict_gp <- function(data,
     # Estimate beta via GLS
     LXs <- forwardsolve(t(L), X_covariate)
     A   <- crossprod(LXs)
-    Ly  <- forwardsolve(t(L), y_obs) |> backsolve(L, _)
+
+    tmp  <- forwardsolve(t(L), y_obs)
+    Ly   <- backsolve(L, tmp)
+
     B   <- crossprod(X_covariate, Ly)
     beta <- solve(A, B)
 
     # Residual contributions
     residual  <- y_obs - X_covariate %*% beta
-    Lres      <- forwardsolve(t(L), residual) |> backsolve(L, _)
+    tmp <- forwardsolve(t(L), residual)
+    Lres <- backsolve(L, tmp)
+
     cond_mean <- X_star %*% beta + K_obs_pred %*% Lres
 
     # Covariance decomposition
@@ -305,8 +310,7 @@ predict_gp <- function(data,
 #' Compute Gaussian Process Log-Likelihood (with Optional Quadratic Mean)
 #'
 #' Evaluate the (negative) log-likelihood of observed data under a Gaussian Process
-#' model, optionally including a linear-plus-quadratic mean function and a log-normal
-#' prior on the length-scale parameter.
+#' model, optionally including a linear-plus-quadratic mean function.
 #'
 #' @param length_scale Positive numeric scalar or vector of length-scales for each dimension.
 #' @param x Numeric vector or matrix of training inputs (rows = observations).
@@ -314,9 +318,6 @@ predict_gp <- function(data,
 #' @param signal_var Positive numeric scalar specifying the GP signal variance (\eqn{\sigma^2}).
 #' @param noise_var Positive numeric scalar specifying observation noise variance.
 #' @param D Integer. Dimensionality of the input space (number of columns in \code{x}).
-#' @param prior_l_mean Numeric scalar. Mean of the log-normal prior on \code{length_scale},
-#'   shifted by \(\tfrac12\log D\).
-#' @param prior_l_sd Numeric scalar. Standard deviation of that log-normal prior.
 #' @param quad Logical; if \code{FALSE} (default), assume zero-mean GP. If \code{TRUE},
 #'   include a mean function \(\beta_0 + x^\top \beta_1 + (x\otimes x)^\top \beta_2\).
 #' @param nu Positive numeric specifying the smoothness parameter for the Matérn kernel.
@@ -373,12 +374,10 @@ predict_gp <- function(data,
 #'                       quad = TRUE,
 #'                       nu   = Inf)
 #'
-#' @importFrom MASS chol2inv
-#' @importFrom BOSS cov_generator
 #' @export
 compute_like <- function(length_scale, x, y,
                          signal_var, noise_var,
-                         D, prior_l_mean, prior_l_sd,
+                         D,
                          quad = FALSE, nu = Inf) {
   if (!quad) {
     choice_cov <- cov_generator(length_scale = length_scale,
@@ -394,11 +393,7 @@ compute_like <- function(length_scale, x, y,
     Q         <- chol2inv(L)
 
     like <- as.numeric((t(y) %*% Q %*% y) / 2
-                       - log_det_Q
-                       - sum(dlnorm(length_scale,
-                                    prior_l_mean + log(D) / 2,
-                                    prior_l_sd,
-                                    log = TRUE)))
+                       - log_det_Q)
     if (is.nan(like) || is.na(like)) return(1e20)
     if (like == -Inf)               return(-1e20)
     if (like ==  Inf)               return(1e20)
@@ -433,11 +428,7 @@ compute_like <- function(length_scale, x, y,
     q2 <- as.numeric((t(y) %*% Q %*% X_covariate %*% KK %*%
                         t(X_covariate) %*% Q %*% y) / 2)
 
-    like <- q1 - q2 - log_det_Q + log_det_KK -
-      sum(dlnorm(length_scale,
-                 prior_l_mean + log(D) / 2,
-                 prior_l_sd,
-                 log = TRUE))
+    like <- q1 - q2 - log_det_Q + log_det_KK
 
     if (is.nan(like) || is.na(like)) return(1e20)
     if (like == -Inf)               return(-1e20)
