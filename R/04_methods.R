@@ -108,6 +108,12 @@ plot.boss <- function(x,
                       ask        = FALSE,
                       ...) {
 
+  # Check if essential design points are available
+  if (is.null(x$essential_design_points$x_original)) {
+    stop("No essential design points available for plotting. Please run construct_essential_designs() first.")
+  }
+
+
   ## 1) If D==1, draw surrogate + design + ticks
   if (x$D == 1) {
     ys      <- x$essential_design_points$y

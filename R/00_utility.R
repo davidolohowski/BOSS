@@ -21,7 +21,6 @@
 #' # Compare to manual calculation
 #' # (0,0) vs (1,0): 1^2 + 0^2 = 1
 #' # (0,0) vs (0,1): 0^2 + 1^2 = 1
-#' @export
 compute_sq_dist <- function(X, Y) {
   if (is.vector(X)) X <- matrix(X, ncol = 1)
   if (is.vector(Y)) Y <- matrix(Y, ncol = 1)
@@ -502,7 +501,6 @@ UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
 #'              y = rnorm(10))
 #' EXPLORE(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3)
 #'
-#' @export
 EXPLORE <- function(x, data, cov, nv, quad = FALSE){
   fnew <- predict_gp(data, x, choice_cov = cov, noise_var = nv, quad = quad)
 

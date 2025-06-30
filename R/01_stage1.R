@@ -61,9 +61,10 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
     if (verbose >= level) print(msg)
   }
 
-  # If verbose == 1, set up a progress bar.
-  if (verbose == 1) {
-    pb <- txtProgressBar(min = 0, max = max_iter, style = 3)
+  # If verbose >= 1, print that stage 1 starts.
+  if (verbose >= 1) {
+    cat("Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.\n")
+    start_time <- Sys.time()
   }
 
   # Check if dimensions of lower and upper bounds match.
@@ -140,7 +141,6 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 
   i <- 1
   while(i <= max_iter && modal_eps < modal_max_diff){
-    if(verbose == 1) setTxtProgressBar(pb, i)
     if(verbose == 3) {
       print(paste("Iteration:", i))
     } else if(verbose == 2) {
@@ -290,7 +290,12 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
     }
   }
 
-  if(verbose == 1) close(pb)
+  # If verbose >= 1, print that stage 1 ends.
+  if (verbose >= 1) {
+    cat("Stage 1: BOSS finished.\n")
+    end_time <- Sys.time()
+    cat("Total time taken:", round(difftime(end_time, start_time, units = "secs"), 2), "seconds.\n")
+  }
 
   surrogate_fn <- function(xvalue) {
     xvalue_transform <- (xvalue - lower) / (upper - lower)

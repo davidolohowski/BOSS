@@ -197,7 +197,7 @@ compute_fill_in <- function(boss_result, grid_n = 200, boundary_n = 200) {
 #' @param max_add Integer; maximum number of points to add (default 100).
 #' @param grid_n Integer; resolution per axis for interior lattice (default 200).
 #' @param boundary_n Integer; number of boundary samples (default 200).
-#' @param verbose Integer in \{0,1,2\}; 0=silent, 1=summary, 2=per-iteration.
+#' @param verbose Integer in \{0,1,2,3\}; 0=silent, 1=summary, (>=)2=per-iteration.
 #'
 #' @return The updated \code{boss_result}, with its
 #'   \code{essential_design_points} and \code{fill_in} refreshed.
@@ -222,8 +222,8 @@ fill_in <- function(boss_result,
   if (!is.numeric(h) || length(h)!=1 || h<0) {
     stop("`h` must be a non-negative numeric scalar")
   }
-  if (!verbose %in% 0:2) {
-    stop("`verbose` must be 0, 1, or 2")
+  if (!verbose %in% 0:3){
+    stop("`verbose` must be an integer in {0,1,2,3}")
   }
 
   # unpack
@@ -322,7 +322,7 @@ fill_in <- function(boss_result,
     boss_result <- compute_fill_in(boss_result,
                                    grid_n = (grid_n*10), boundary_n = (boundary_n*10))
 
-    if (verbose == 2) {
+    if (verbose >= 2) {
       cat("Iteration", added,
           ": added point =", signif(new_o, 6),
           "-> fill_in =", signif(boss_result$fill_in, 6), "\n")

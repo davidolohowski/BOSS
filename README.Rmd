@@ -1,0 +1,73 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# BOSS
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of BOSS is to perform scalable approximate Bayesian inference for complex hierarchical models, with a (log) marginal likelihood that is intractable and/or expensive to compute.
+
+## Installation
+
+You can install the development version of BOSS from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("davidolohowski/BOSS")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a simple problem in 1-D.
+
+Assume the true (log) marginal likelihood is given by the following sinusoidal function:
+
+```{r example}
+library(BOSS)
+f1d <- function(x) sin(0.5*pi*x)
+```
+
+We can use the `boss` function to approximate the (log) marginal likelihood of this function, specifying the objective function, the dimension of the problem, and the bounds for the BO optimization. 
+The `alpha` parameter controls the level of the essential support, while `h` controls the target fill-in distance of the design points.
+
+```{r}
+# A automatic implementation
+br2 <- boss(f1d, D = 1, 
+            modal_opts = list(lower = 0, upper = 2),
+            alpha = 0.05, h = 0.1, verbose = 1)
+plot(br2)
+```
+
+
+For more advanced applications, the user can also manually perform each step of the BOSS algorithm, as shown below:
+```{r}
+# A manual implementation
+br <- BOSS:::BOSS_modal(func = f1d, D = 1,
+                        lower = 0, upper = 2,
+                        update_step = 5,
+                        max_iter = 20,
+                        verbose = 1)
+br <- update_hessian(br)
+br <- compute_essential_support(br, alpha=0.05)
+br <- construct_essential_designs(br)
+br <- compute_fill_in(br)
+br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
+br_update <- update_boss(br)
+plot(br_update)
+```
+
+
+

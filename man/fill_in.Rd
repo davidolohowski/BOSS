@@ -26,7 +26,7 @@ and containing \code{lower} and \code{upper}.}
 
 \item{boundary_n}{Integer; number of boundary samples (default 200).}
 
-\item{verbose}{Integer in \{0,1,2\}; 0=silent, 1=summary, 2=per-iteration.}
+\item{verbose}{Integer in \{0,1,2,3\}; 0=silent, 1=summary, (>=)2=per-iteration.}
 }
 \value{
 The updated \code{boss_result}, with its
