@@ -1,0 +1,24 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/BOSS_modal.html</loc></url>
+<url><loc>/reference/EXPLORE.html</loc></url>
+<url><loc>/reference/UCB.html</loc></url>
+<url><loc>/reference/boss.html</loc></url>
+<url><loc>/reference/compute_essential_support.html</loc></url>
+<url><loc>/reference/compute_fill_in.html</loc></url>
+<url><loc>/reference/compute_like.html</loc></url>
+<url><loc>/reference/compute_sq_dist.html</loc></url>
+<url><loc>/reference/construct_essential_designs.html</loc></url>
+<url><loc>/reference/cov_generator.html</loc></url>
+<url><loc>/reference/fill_in.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/plot.boss.html</loc></url>
+<url><loc>/reference/predict_gp.html</loc></url>
+<url><loc>/reference/print.boss.html</loc></url>
+<url><loc>/reference/summary.boss.html</loc></url>
+<url><loc>/reference/update_boss.html</loc></url>
+<url><loc>/reference/update_hessian.html</loc></url>
+</urlset>
+
