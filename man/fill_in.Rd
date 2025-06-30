@@ -2,33 +2,47 @@
 % Please edit documentation in R/02_stage2.R
 \name{fill_in}
 \alias{fill_in}
-\title{Greedy Fill-In of Essential Design Points to Reach Target Spacing (with Verbosity)}
+\title{Fill-In by Greedy Selection with Candidate Sufficiency Checks}
 \usage{
-fill_in(boss_result, h, max_add = 20, verbose = 0)
+fill_in(
+  boss_result,
+  h,
+  max_add = 100,
+  grid_n = 200,
+  boundary_n = 200,
+  verbose = 0
+)
 }
 \arguments{
 \item{boss_result}{A \code{boss} object with non-NULL
-\code{essential_design_points$x_original} and numeric \code{fill_in}.}
+\code{essential_support} and \code{essential_design_points\$x_original},
+and containing \code{lower} and \code{upper}.}
 
-\item{h}{Numeric; target fill-in distance (must be \(\ge0\)).}
+\item{h}{Numeric; target fill-in distance (>= 0).}
 
-\item{max_add}{Integer; maximum number of new points to add (default 20).}
+\item{max_add}{Integer; maximum number of points to add (default 100).}
 
-\item{verbose}{Integer (0, 1, or 2); level of printed feedback:
-\describe{
-  \item{0}{Silent.}
-  \item{1}{Print total iterations and final fill_in.}
-  \item{2}{Also print fill_in after each addition.}
-}}
+\item{grid_n}{Integer; resolution per axis for interior lattice (default 200).}
+
+\item{boundary_n}{Integer; number of boundary samples (default 200).}
+
+\item{verbose}{Integer in \{0,1,2\}; 0=silent, 1=summary, 2=per-iteration.}
 }
 \value{
-The same \code{boss_result}, with its
-  \code{essential_design_points$x_original} augmented by new points,
-  and its \code{fill_in} updated to \(\le h\) if possible.
+The updated \code{boss_result}, with its
+  \code{essential_design_points} and \code{fill_in} refreshed.
 }
 \description{
-Starting from a \code{boss_result} that already has
-\code{essential_design_points$x_original} and a computed \code{fill_in},
-iteratively add new points at midpoints of the largest gaps until
-\code{fill_in <= h} or until \code{max_add} points have been added.
+At each iteration:
+1. Builds a fixed pool of candidate points (interior lattice + uniform boundary),
+   truncated to the original box.
+2. Checks that the candidate pool size is at least \code{max_add}.
+3. Greedily selects the candidate farthest from the current design,
+   appends it, and recomputes \code{fill_in}.
+4. Stops when \code{fill_in <= h} or \code{max_add} points have been added.
+}
+\details{
+If the candidate pool is too small to potentially reach \code{max_add},
+or if even the best candidate cannot reduce \code{fill_in} below \code{h},
+a warning is issued.
 }
