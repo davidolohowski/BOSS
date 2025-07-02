@@ -15,7 +15,7 @@ model, optionally including a linear-plus-quadratic mean function."></head><body
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,7 @@ Defaults to <code>Inf</code>, selecting the Squared Exponential kernel.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>**Zero-mean GP** (<code>quad = FALSE</code>):</p>
+    <p>Zero-mean GP (<code>quad = FALSE</code>):</p>
 <p>* Build covariance \(C = K_{xx} + \sigma_n^2 I\) via
   <code><a href="cov_generator.html">cov_generator</a></code>.</p>
 <p>* Compute Cholesky factor \(L L^T = C\).</p>
@@ -112,7 +112,7 @@ Defaults to <code>Inf</code>, selecting the Squared Exponential kernel.</p></dd>
 <p>* Precision \(Q = C^{-1} = \texttt{chol2inv}(L)\).</p>
 <p>* Negative log-likelihood:
   $$\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]$$</p>
-<p>**GP with quadratic mean** (<code>quad = TRUE</code>):</p>
+<p>GP with quadratic mean (<code>quad = TRUE</code>):</p>
 <p>* Construct design matrix \(X = [1,\,x,\,\mathrm{unique}(x \otimes x)]\).</p>
 <p>* Build \(C = K_{xx} + \sigma^2_n I\) and its precision \(Q\).</p>
 <p>* Form marginal precision \(S = X^\top Q X\) and invert via Cholesky.</p>
