@@ -6,7 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Fast Approximate Bayesian Inference through Bayesian Optimization Sequential Surrogate (BOSS) • BOSS</title>
-<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
@@ -15,20 +21,6 @@
 <meta property="og:description" content="R Package for Bayesian Optimization Sequential Surrogate">
 </head>
 <body>
-<p>
-
-
-
-
-
-
-
-
-  mathjax.html
-
-  
-
-  </p>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -88,11 +80,11 @@
 <span>            alpha <span class="op">=</span> <span class="fl">0.05</span>, h <span class="op">=</span> <span class="fl">0.1</span>, verbose <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.</span></span>
 <span><span class="co">#&gt; Stage 1: BOSS finished.</span></span>
-<span><span class="co">#&gt; Total time taken: 1.71 seconds.</span></span>
+<span><span class="co">#&gt; Total time taken: 1.76 seconds.</span></span>
 <span><span class="co">#&gt; Start updating Hessian at the mode...</span></span>
 <span><span class="co">#&gt; Hessian updated in  0  seconds.</span></span>
 <span><span class="co">#&gt; Stage 2: Fill-in to target spacing h =  0.1 </span></span>
-<span><span class="co">#&gt; fill in: added 20 point(s).</span></span>
+<span><span class="co">#&gt; fill in: added 16 point(s).</span></span>
 <span><span class="co">#&gt; Final update completed in  0.01  seconds.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">br2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-2-1.png" width="100%"><img src="reference/figures/README-unnamed-chunk-2-2.png" width="100%"></p>
@@ -106,13 +98,13 @@
 <span>                        verbose <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.</span></span>
 <span><span class="co">#&gt; Stage 1: BOSS finished.</span></span>
-<span><span class="co">#&gt; Total time taken: 0.95 seconds.</span></span>
+<span><span class="co">#&gt; Total time taken: 0.82 seconds.</span></span>
 <span><span class="va">br</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/update_hessian.html">update_hessian</a></span><span class="op">(</span><span class="va">br</span><span class="op">)</span></span>
 <span><span class="va">br</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_essential_support.html">compute_essential_support</a></span><span class="op">(</span><span class="va">br</span>, alpha<span class="op">=</span><span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="va">br</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/construct_essential_designs.html">construct_essential_designs</a></span><span class="op">(</span><span class="va">br</span><span class="op">)</span></span>
 <span><span class="va">br</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_fill_in.html">compute_fill_in</a></span><span class="op">(</span><span class="va">br</span><span class="op">)</span></span>
 <span><span class="va">br</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fill_in.html">fill_in</a></span><span class="op">(</span><span class="va">br</span>, h <span class="op">=</span> <span class="fl">0.1</span>, verbose <span class="op">=</span> <span class="fl">1</span>, max_add <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
-<span><span class="co">#&gt; fill in: added 21 point(s).</span></span>
+<span><span class="co">#&gt; fill in: added 17 point(s).</span></span>
 <span><span class="va">br_update</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/update_boss.html">update_boss</a></span><span class="op">(</span><span class="va">br</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">br_update</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"><img src="reference/figures/README-unnamed-chunk-3-2.png" width="100%"></p>
@@ -120,7 +112,7 @@
 <div class="section level2">
 <h2 id="id_2-d-example">2-D Example<a class="anchor" aria-label="anchor" href="#id_2-d-example"></a>
 </h2>
-<p>Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of <span class="math inline">$`N((0,0),\text{diag}(1,1))`$</span> random variable.</p>
+<p>Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of <span class="math inline">\(`N((0,0),\text{diag}(1,1))`\)</span> random variable.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f2d</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">mvtnorm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html" class="external-link">dmvnorm</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">2</span><span class="op">)</span>, log <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <p>Run BOSS:</p>
@@ -133,16 +125,16 @@
 <span><span class="co">#&gt; Stage 1: BOSS finished.</span></span>
 <span><span class="co">#&gt; Total time taken: 2.06 seconds.</span></span>
 <span><span class="co">#&gt; Start updating Hessian at the mode...</span></span>
-<span><span class="co">#&gt; Hessian updated in  0  seconds.</span></span>
+<span><span class="co">#&gt; Hessian updated in  0.01  seconds.</span></span>
 <span><span class="co">#&gt; Stage 2: Fill-in to target spacing h =  0.1</span></span>
 <span><span class="co">#&gt; Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :</span></span>
 <span><span class="co">#&gt; Number of points to be added is greater than max_add. Required h may not be</span></span>
 <span><span class="co">#&gt; achieved.</span></span>
 <span><span class="co">#&gt; fill in: added 100 point(s).</span></span>
 <span><span class="co">#&gt; Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :</span></span>
-<span><span class="co">#&gt; Updated fill-in distance is (0.467908) &gt; target h (0.100000); Adjust your</span></span>
+<span><span class="co">#&gt; Updated fill-in distance is (0.487942) &gt; target h (0.100000); Adjust your</span></span>
 <span><span class="co">#&gt; expectation by either increasing max_add and n_sample_max or increasing h.</span></span>
-<span><span class="co">#&gt; Final update completed in  0.1  seconds.</span></span>
+<span><span class="co">#&gt; Final update completed in  0.08  seconds.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">br3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-4-1.png" width="100%"></p>
 <p>Similarly, users can also have more modular control over the procedure:</p>
@@ -155,7 +147,7 @@
 <span>                        verbose <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.</span></span>
 <span><span class="co">#&gt; Stage 1: BOSS finished.</span></span>
-<span><span class="co">#&gt; Total time taken: 2.6 seconds.</span></span>
+<span><span class="co">#&gt; Total time taken: 1.78 seconds.</span></span>
 <span></span>
 <span><span class="va">br3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/update_hessian.html">update_hessian</a></span><span class="op">(</span><span class="va">br3</span><span class="op">)</span></span>
 <span><span class="va">br3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_essential_support.html">compute_essential_support</a></span><span class="op">(</span><span class="va">br3</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
@@ -165,7 +157,7 @@
 <span><span class="co">#&gt; Warning in fill_in(br3, h = 0.1, max_add = 100): Number of points to be added</span></span>
 <span><span class="co">#&gt; is greater than max_add. Required h may not be achieved.</span></span>
 <span><span class="co">#&gt; Warning in fill_in(br3, h = 0.1, max_add = 100): Updated fill-in distance is</span></span>
-<span><span class="co">#&gt; (0.484546) &gt; target h (0.100000); Adjust your expectation by either increasing</span></span>
+<span><span class="co">#&gt; (0.465721) &gt; target h (0.100000); Adjust your expectation by either increasing</span></span>
 <span><span class="co">#&gt; max_add and n_sample_max or increasing h.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">br3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" width="100%"></p>
@@ -219,6 +211,5 @@
 
 
 
-  
-</body>
+  </body>
 </html>
