@@ -73,7 +73,7 @@ plot(br_update)
 
 Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of $N((0,0),\text{diag}(1,1))$ random variable.
 
-```{r example}
+```{r exmple2d}
 f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), log = T)
 ```
 
@@ -101,7 +101,7 @@ br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
 br3 <- construct_essential_designs(br3)
 br3 <- compute_fill_in(br3, n_samples = 100000)
-br3 <- fill_in(br3, h = 0.05, max_add = 100)
+br3 <- fill_in(br3, h = 0.1, max_add = 100)
 plot(br3)
 
 br3_update <- update_boss(br3)
