@@ -329,32 +329,19 @@ predict_gp <- function(data,
 #'
 #' @details
 #' **Zero-mean GP** (\code{quad = FALSE}):
-#'
-#' * Build covariance \eqn{C = K_{xx} + \sigma^2_n I\} via
+#' * Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
 #'   \code{\link[BOSS]{cov_generator}}.
-#'
 #' * Compute Cholesky factor \eqn{L L^T = C}.
-#'
 #' * Log-determinant: \eqn{\log\det(C) = 2\sum\log(\mathrm{diag}(L))}.
 #' * Precision \eqn{Q = C^{-1} = \texttt{chol2inv}(L)}.
-#'
 #' * Negative log-likelihood:
-#'   \deqn{
-#'     \frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q)
-#'     \;-\;\sum \log\bigl[\text{LogNormal}(length\_scale\mid prior\_l)\bigr].
-#'   }
-#'
+#'   \deqn{\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(length\_scale\mid prior\_l)\bigr]}
 #' **GP with quadratic mean** (\code{quad = TRUE}):
-#'
 #' * Construct design matrix \eqn{X = [1,\,x,\,\mathrm{unique}(x \otimes x)]}.
-#'
 #' * Build \eqn{C = K_{xx} + \sigma^2_n I} and its precision \eqn{Q}.
-#'
 #' * Form marginal precision \eqn{S = X^\top Q X} and invert via Cholesky.
-#'
 #' * Compute two quadratic terms:
 #'   \eqn{\tfrac12\,y^\top Q\,y} and \eqn{\tfrac12\,y^\top Q X S^{-1} X^\top Q\,y}.
-#'
 #' * Combine with log-determinants of \eqn{Q} and \eqn{S^{-1}} and the log-prior
 #'   to yield the final negative log-likelihood.
 #'

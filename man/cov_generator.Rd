@@ -32,6 +32,7 @@ between two sets of input points in \eqn{d}-dimensional space.
 \details{
 The returned function first rescales each dimension by \code{length_scale},
 then computes the pairwise squared Euclidean distances.
+
 - If \code{nu = Inf}, it returns the SE kernel:
   \deqn{K_{ij} = \sigma^2 \exp\bigl(-\tfrac{1}{2} \|x_i - x'_j\|^2\bigr).}
 - Otherwise, it constructs the Matérn kernel with smoothness \code{nu}:

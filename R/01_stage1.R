@@ -11,7 +11,7 @@
 #' @param D Input dimension.
 #' @param lower Numeric vector of length D giving lower bounds (in original scale).
 #' @param upper Numeric vector of length D giving upper bounds.
-#' @param nu GP covariance smoothness. \eqn{\nu = \inf} represents squared-exponential kernel; \eqn{0 < \nu < \inf} represents the Matern kernel with smoothness ceiling(\nu) - 1.
+#' @param nu GP covariance smoothness. \eqn{\nu = \infty} represents squared-exponential kernel; \eqn{0 < \nu < \infty} represents the Matern kernel with smoothness \eqn{\lceil\nu\rceil - 1}.
 #' @param quad Logical; if \code{FALSE} (default), use a zero-mean GP model.
 #'   If \code{TRUE}, fit a linear-plus-quadratic mean model
 #'   \eqn{\beta_0 + x^\top \beta_1 + (x \otimes x)^\top \beta_2} alongside the GP.
