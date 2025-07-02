@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,7 +111,7 @@ If <code>TRUE</code>, fit a linear-plus-quadratic mean model
 
 
 <dt id="arg-nu">nu<a class="anchor" aria-label="anchor" href="#arg-nu"></a></dt>
-<dd><p>GP covariance smoothness. \(\nu = \inf\) represents squared-exponential kernel; \(0 &lt; \nu &lt; \inf\) represents the Matern kernel with smoothness ceiling() - 1.</p></dd>
+<dd><p>GP covariance smoothness. \(\nu = \infty\) represents squared-exponential kernel; \(0 &lt; \nu &lt; \infty\) represents the Matern kernel with smoothness \(\lceil\nu\rceil - 1\).</p></dd>
 
 
 <dt id="arg-noise-var">noise_var<a class="anchor" aria-label="anchor" href="#arg-noise-var"></a></dt>
