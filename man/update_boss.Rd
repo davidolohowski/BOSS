@@ -13,7 +13,7 @@ and containing \code{lower}, \code{upper}, and \code{objective_function}.}
 }
 \value{
 The updated \code{boss_result}, with fields
-  \code{essential_design_points\$y}, \code{mode}, \code{mode_hessian},
+  \code{essential_design_points$y}, \code{mode}, \code{mode_hessian},
   \code{gp_params}, and \code{surrogate} refreshed.
 }
 \description{

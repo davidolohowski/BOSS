@@ -8,7 +8,7 @@ compute_fill_in(boss_result, n_samples = 10000)
 }
 \arguments{
 \item{boss_result}{A \code{boss} object with non-NULL
-\code{essential_support}, \code{essential_design_points\$x_original},
+\code{essential_support}, \code{essential_design_points$x_original},
 and containing \code{lower} and \code{upper}.}
 
 \item{n_samples}{Integer; number of unifrom samples in the essential support to estimate the fill-in (default 10000).}
@@ -18,7 +18,7 @@ The input \code{boss_result}, with \code{fill_in} updated.
 }
 \description{
 Estimate the fill-in distance
-\(\sup_{x\in\Omega}\min_j \|x - x_j\|\)
+\deqn{\sup_{x\in\Omega}\min_j \|x - x_j\|}
 by:
 1. Uniformly sample inside the ellipsoid Ω,
 2. Truncating all candidates to lie within the original \code{lower}/\code{upper} box,

@@ -2,13 +2,13 @@
 % Please edit documentation in R/02_stage2.R
 \name{fill_in}
 \alias{fill_in}
-\title{Approximately fill-in by supplying a Sobol-sequence in the essential support and filter against existing design points.}
+\title{Fill-in essential support with a Sobol-sequence}
 \usage{
 fill_in(boss_result, h, max_add = 100, n_sample_max = 10000, verbose = 0)
 }
 \arguments{
 \item{boss_result}{A \code{boss} object with non-NULL
-\code{essential_support} and \code{essential_design_points\$x_original},
+\code{essential_support} and \code{essential_design_points$x_original},
 and containing \code{lower} and \code{upper}.}
 
 \item{h}{Numeric; target fill-in distance (>= 0).}
@@ -24,12 +24,14 @@ The updated \code{boss_result}, with its
   \code{essential_design_points} and \code{fill_in} refreshed.
 }
 \description{
+Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
+approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 1. Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
-   \(n = \max\{n_sample_max, 2*\text{Vol}(\text{Original box})/h^D\}\).
+   \deqn{n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.}
 2. Generate a Sobol-sequence within the original box.
-3. Truncate the Sobol-sequence within the ellipsoid.
-4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
-5. Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates to ensure optimal covering over the ellipsoid.
+3. Truncate the Sobol-sequence outside the ellipsoid.
+4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within \code{h} of existing points.
+5. Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
 6. Recompute new fill-in based on the selected Sobol and existing design points.
 }
 \details{

@@ -57,7 +57,7 @@ construct_essential_designs <- function(boss_result) {
 #' Approximate Fill-In Distance via Uniform Sampling (with Truncation)
 #'
 #' Estimate the fill-in distance
-#' \(\sup_{x\in\Omega}\min_j \|x - x_j\|\)
+#' \deqn{\sup_{x\in\Omega}\min_j \|x - x_j\|}
 #' by:
 #' 1. Uniformly sample inside the ellipsoid Ω,
 #' 2. Truncating all candidates to lie within the original \code{lower}/\code{upper} box,
@@ -65,7 +65,7 @@ construct_essential_designs <- function(boss_result) {
 #' 4. Taking the maximum of these minima.
 #'
 #' @param boss_result A \code{boss} object with non-NULL
-#'   \code{essential_support}, \code{essential_design_points\$x_original},
+#'   \code{essential_support}, \code{essential_design_points$x_original},
 #'   and containing \code{lower} and \code{upper}.
 #' @param n_samples Integer; number of unifrom samples in the essential support to estimate the fill-in (default 10000).
 #'
@@ -116,21 +116,23 @@ compute_fill_in <- function(boss_result, n_samples = 10000) {
   return(boss_result)
 }
 
-#' Approximately fill-in by supplying a Sobol-sequence in the essential support and filter against existing design points.
+#' Fill-in essential support with a Sobol-sequence
 #'
+#' Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
+#' approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 #' 1. Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
-#'    \(n = \max\{n_sample_max, 2*\text{Vol}(\text{Original box})/h^D\}\).
+#'    \deqn{n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.}
 #' 2. Generate a Sobol-sequence within the original box.
-#' 3. Truncate the Sobol-sequence within the ellipsoid.
-#' 4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
-#' 5. Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates to ensure optimal covering over the ellipsoid.
+#' 3. Truncate the Sobol-sequence outside the ellipsoid.
+#' 4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within \code{h} of existing points.
+#' 5. Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
 #' 6. Recompute new fill-in based on the selected Sobol and existing design points.
 #'
 #' If the candidate pool is over \code{max_add}, or if \code{fill_in} cannot be reduced below \code{h},
 #' a warning is issued.
 #'
 #' @param boss_result A \code{boss} object with non-NULL
-#'   \code{essential_support} and \code{essential_design_points\$x_original},
+#'   \code{essential_support} and \code{essential_design_points$x_original},
 #'   and containing \code{lower} and \code{upper}.
 #' @param h Numeric; target fill-in distance (>= 0).
 #' @param max_add Integer; maximum number of points to add (default 100).
@@ -254,7 +256,7 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 #'   \code{essential_design_points} (list with \code{x_original}, \code{y}),
 #'   and containing \code{lower}, \code{upper}, and \code{objective_function}.
 #' @return The updated \code{boss_result}, with fields
-#'   \code{essential_design_points\$y}, \code{mode}, \code{mode_hessian},
+#'   \code{essential_design_points$y}, \code{mode}, \code{mode_hessian},
 #'   \code{gp_params}, and \code{surrogate} refreshed.
 #' @export
 update_boss <- function(boss_result) {

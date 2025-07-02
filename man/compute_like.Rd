@@ -44,7 +44,7 @@ Evaluate the (negative) log-likelihood of observed data under a Gaussian Process
 model, optionally including a linear-plus-quadratic mean function.
 }
 \details{
-**Zero-mean GP** (\code{quad = FALSE}):
+\textbf{Zero-mean GP} (\code{quad = FALSE}):
 
 * Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
   \code{\link[BOSS]{cov_generator}}.
@@ -58,7 +58,7 @@ model, optionally including a linear-plus-quadratic mean function.
 * Negative log-likelihood:
   \deqn{\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
 
-**GP with quadratic mean** (\code{quad = TRUE}):
+\textbf{GP with quadratic mean} (\code{quad = TRUE}):
 
 * Construct design matrix \eqn{X = [1,\,x,\,\mathrm{unique}(x \otimes x)]}.
 
