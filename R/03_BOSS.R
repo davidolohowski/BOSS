@@ -4,7 +4,7 @@
 #'   1) Bayesian sequential design via \code{BOSS_modal()},
 #'   2) Hessian update at the mode,
 #'   3) Essential‐support extraction and initial fill‐in,
-#'   4) Greedy fill‐in to a target spacing,
+#'   4) Approximate fill‐in to a target spacing,
 #'   5) Final update of mode, Hessian, GP hyperparameters, and surrogate.
 #'
 #' @param func The objective function \code{f: [lower,upper]^D -> R}.
@@ -24,10 +24,10 @@
 #' @param hess_opts List of options for \code{update_hessian()}. Any of
 #'   \code{method}, \code{method.args}, \code{tol}.
 #' @param essup_opts List of options for the essential‐support stage:
-#'   \code{boundary_initial}, plus any remaining arguments
-#'   to \code{compute_fill_in()} (e.g. \code{grid_n}, \code{boundary_n}).
+#'   \code{alpha} to construct the essential support and \code{n_samples}
+#'   for \code{compute_fill_in()}.
 #' @param fillin_opts List of options for the greedy \code{fill_in()} stage:
-#'   \code{max_add}, \code{grid_n}, \code{boundary_n}.
+#'   \code{max_add}, \code{n_sample_max}.
 #' @param verbose Integer 0–3; for progress.
 #'
 #' @return A fully‐updated S3 \code{boss} object.
@@ -69,15 +69,12 @@ boss <- function(func,
   )
   default_essup <- list(
     alpha             = alpha,
-    boundary_initial  = 100,
-    grid_n            = 200,
-    boundary_n        = 200
+    n_samples         = 10000
   )
   default_fillin <- list(
     h         = h,
     max_add   = 100,
-    grid_n    = 200,
-    boundary_n= 200,
+    n_sample_max = 10000,
     verbose   = verbose
   )
 
@@ -107,11 +104,10 @@ boss <- function(func,
 
   ## 4) Step 3: essential‐support + initial fill‐in
   br <- compute_essential_support(br, alpha = essup_opts$alpha)
-  br <- construct_essential_designs(br,
-                                    boundary_initial = essup_opts$boundary_initial)
+  br <- construct_essential_designs(br)
   # pass the remaining essup arguments to compute_fill_in()
   extra_essup <- essup_opts[setdiff(names(essup_opts),
-                                    c("alpha","boundary_initial"))]
+                                    c("alpha"))]
   br <- do.call(compute_fill_in,
                 c(list(boss_result = br), extra_essup))
 
