@@ -1,4 +1,6 @@
 url: https://davidolohowski.github.io/BOSS/
 template:
   bootstrap: 5
+  includes:
+    in_header: "mathjax.html"
 

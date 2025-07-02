@@ -10,7 +10,7 @@
 #'   \code{[i, j]} is the squared distance between row \code{i} of \code{X}
 #'   and row \code{j} of \code{Y}.
 #' @details Internally, uses the identity
-#'   \deqn{||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y}
+#'   \\[||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y\\]
 #'   to compute all pairwise squared distances efficiently.
 #' @examples
 #' # Two 2D points (Not run)
