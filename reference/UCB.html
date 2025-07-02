@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,18 +80,18 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Numeric vector of UCB values (higher is better). Internally returns \(-(x) - \,(x)\)
-  so that minimizing this corresponds to maximizing the classic UCB acquisition \( + \,^2\).</p>
+    <p>Numeric vector of UCB values (higher is better). Internally returns \(-\mu(x) - \sqrt{\beta\,\Sigma(x)}\)
+  so that minimizing this corresponds to maximizing the classic UCB acquisition \(\mu + \sqrt{\beta\,\sigma^2}\).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The exploration–exploitation tradeoff parameter \(\) is set as
+    <p>The exploration–exploitation tradeoff parameter \(\beta\) is set as
 $$\beta = 2\log\bigl(D^2\pi^2/(6\,d)\bigr).$$
-The function calls <code><a href="predict_gp.html">predict_gp</a></code> to obtain the posterior mean \((x)\)
-and variance \(^2(x)\), then computes
-\[
-  UCB(x) \;=\; (x) \;+\;\,^2(x).
-\]</p>
+The function calls <code><a href="predict_gp.html">predict_gp</a></code> to obtain the posterior mean \(\mu(x)\)
+and variance \(\sigma^2(x)\), then computes
+$$
+  \mathrm{UCB}(x) \;=\; \mu(x) \;+\;\sqrt{\beta\,\sigma^2(x)}.
+$$</p>
     </div>
 
     <div class="section level2">
