@@ -15,7 +15,7 @@ model, optionally including a linear-plus-quadratic mean function."></head><body
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,7 @@ model, optionally including a linear-plus-quadratic mean function.</p>
 
 <dt id="arg-quad">quad<a class="anchor" aria-label="anchor" href="#arg-quad"></a></dt>
 <dd><p>Logical; if <code>FALSE</code> (default), assume zero-mean GP. If <code>TRUE</code>,
-include a mean function \(_0 + x^ _1 + (x x)^ _2\).</p></dd>
+include a mean function \(\beta_0 + x^\top \beta_1 + (x \otimes x)^\top \beta_2\).</p></dd>
 
 
 <dt id="arg-nu">nu<a class="anchor" aria-label="anchor" href="#arg-nu"></a></dt>
@@ -99,29 +99,26 @@ Defaults to <code>Inf</code>, selecting the Squared Exponential kernel.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A numeric scalar giving the negative log-likelihood (up to an additive constant).
-  Extremely large values (\(&gt;1e20\)) are returned if the computation produces NaN, NA,
+  Extremely large values (\(&gt;1e^{20}\)) are returned if the computation produces NaN, NA,
   or infinite results.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>**Zero-mean GP** (<code>quad = FALSE</code>):
-* Build covariance \(\;C = K_xx + ^2_n I\) via
+* Build covariance \(C = K_{xx} + \sigma_n^2 I\) via
   <code><a href="cov_generator.html">cov_generator</a></code>.
 * Compute Cholesky factor \(L L^T = C\).
-* Log-determinant: \((C) = 2(diag(L))\).
-* Precision \(Q = C^-1 = chol2inv(L)\).
+* Log-determinant: \(\log\det(C) = 2\sum\log(\mathrm{diag}(L))\).
+* Precision \(Q = C^{-1} = \texttt{chol2inv}(L)\).
 * Negative log-likelihood:
-  \[
-    12\,y^T Q\,y \;-\; (Q)
-    \;-\; [LogNormal(length\_scale prior\_l)].
-  \]</p>
-<p>**GP with quadratic mean** (<code>quad = TRUE</code>):
-* Construct design matrix \(X = [1,\,x,\,unique(x x)]\).
-* Build \(C = K_xx + ^2_n I\) and its precision \(Q\).
-* Form marginal precision \(S = X^T Q X\) and invert via Cholesky.
+  $$\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(length\_scale\mid prior\_l)\bigr]$$
+**GP with quadratic mean** (<code>quad = TRUE</code>):
+* Construct design matrix \(X = [1,\,x,\,\mathrm{unique}(x \otimes x)]\).
+* Build \(C = K_{xx} + \sigma^2_n I\) and its precision \(Q\).
+* Form marginal precision \(S = X^\top Q X\) and invert via Cholesky.
 * Compute two quadratic terms:
-  \(12\,y^T Q\,y\) and \(12\,y^T Q X S^-1 X^T Q\,y\).
-* Combine with log-determinants of \(Q\) and \(S^-1\) and the log-prior
+  \(\tfrac12\,y^\top Q\,y\) and \(\tfrac12\,y^\top Q X S^{-1} X^\top Q\,y\).
+* Combine with log-determinants of \(Q\) and \(S^{-1}\) and the log-prior
   to yield the final negative log-likelihood.</p>
     </div>
 

@@ -18,7 +18,7 @@ EXPLORE(x, data, cov, nv, quad = FALSE)
 \item{quad}{Logical; passed to \code{\link[BOSS]{predict_gp}}. If \code{TRUE}, uses a quadratic mean model.}
 }
 \value{
-Numeric vector of exploration scores \(-\sigma^2(x)\). Minimizing this corresponds to selecting
+Numeric vector of exploration scores \eqn{-\sigma^2(x)}. Minimizing this corresponds to selecting
   inputs with the largest posterior variance.
 }
 \description{

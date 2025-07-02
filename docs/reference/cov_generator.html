@@ -17,7 +17,7 @@ between two sets of input points in \(d\)-dimensional space."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,8 +80,8 @@ Use <code>Inf</code> to select the Squared Exponential kernel.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The returned function first rescales each dimension by <code>length_scale</code>,
-then computes the pairwise squared Euclidean distances.
-- If <code>nu = Inf</code>, it returns the SE kernel:
+then computes the pairwise squared Euclidean distances.</p>
+<p>- If <code>nu = Inf</code>, it returns the SE kernel:
   $$K_{ij} = \sigma^2 \exp\bigl(-\tfrac{1}{2} \|x_i - x'_j\|^2\bigr).$$
 - Otherwise, it constructs the Matérn kernel with smoothness <code>nu</code>:
   $$K_{ij} = \sigma^2 \frac{2^{1-\nu}}{\Gamma(\nu)} \bigl(\sqrt{2\nu}\,r_{ij}\bigr)^\nu

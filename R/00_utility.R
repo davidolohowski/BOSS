@@ -329,19 +329,30 @@ predict_gp <- function(data,
 #'
 #' @details
 #' **Zero-mean GP** (\code{quad = FALSE}):
+#'
 #' * Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
 #'   \code{\link[BOSS]{cov_generator}}.
+#'
 #' * Compute Cholesky factor \eqn{L L^T = C}.
+#'
 #' * Log-determinant: \eqn{\log\det(C) = 2\sum\log(\mathrm{diag}(L))}.
+#'
 #' * Precision \eqn{Q = C^{-1} = \texttt{chol2inv}(L)}.
+#'
 #' * Negative log-likelihood:
-#'   \deqn{\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(length\_scale\mid prior\_l)\bigr]}
+#'   \deqn{\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
+#'
 #' **GP with quadratic mean** (\code{quad = TRUE}):
+#'
 #' * Construct design matrix \eqn{X = [1,\,x,\,\mathrm{unique}(x \otimes x)]}.
+#'
 #' * Build \eqn{C = K_{xx} + \sigma^2_n I} and its precision \eqn{Q}.
+#'
 #' * Form marginal precision \eqn{S = X^\top Q X} and invert via Cholesky.
+#'
 #' * Compute two quadratic terms:
 #'   \eqn{\tfrac12\,y^\top Q\,y} and \eqn{\tfrac12\,y^\top Q X S^{-1} X^\top Q\,y}.
+#'
 #' * Combine with log-determinants of \eqn{Q} and \eqn{S^{-1}} and the log-prior
 #'   to yield the final negative log-likelihood.
 #'
@@ -448,17 +459,17 @@ compute_like <- function(length_scale, x, y,
 #' @param d Integer. Dimensionality of the input space.
 #' @param quad Logical; passed to \code{\link[BOSS]{predict_gp}}. If \code{TRUE}, uses a quadratic mean model.
 #'
-#' @return Numeric vector of UCB values (higher is better). Internally returns \(-\mu(x) - \sqrt{\beta\,\Sigma(x)}\)
-#'   so that minimizing this corresponds to maximizing the classic UCB acquisition \(\mu + \sqrt{\beta\,\sigma^2}\).
+#' @return Numeric vector of UCB values (higher is better). Internally returns \eqn{-\mu(x) - \sqrt{\beta\,\Sigma(x)}}
+#'   so that minimizing this corresponds to maximizing the classic UCB acquisition \eqn{\mu + \sqrt{\beta\,\sigma^2}}.
 #'
 #' @details
-#' The exploration–exploitation tradeoff parameter \(\beta\) is set as
+#' The exploration–exploitation tradeoff parameter \eqn{\beta} is set as
 #' \deqn{\beta = 2\log\bigl(D^2\pi^2/(6\,d)\bigr).}
-#' The function calls \code{\link[BOSS]{predict_gp}} to obtain the posterior mean \(\mu(x)\)
-#' and variance \(\sigma^2(x)\), then computes
-#' \[
+#' The function calls \code{\link[BOSS]{predict_gp}} to obtain the posterior mean \eqn{\mu(x)}
+#' and variance \eqn{\sigma^2(x)}, then computes
+#' \deqn{
 #'   \mathrm{UCB}(x) \;=\; \mu(x) \;+\;\sqrt{\beta\,\sigma^2(x)}.
-#' \]
+#' }
 #'
 #' @examples
 #' # Not run
@@ -490,7 +501,7 @@ UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
 #' @param nv Numeric scalar. Observation noise variance.
 #' @param quad Logical; passed to \code{\link[BOSS]{predict_gp}}. If \code{TRUE}, uses a quadratic mean model.
 #'
-#' @return Numeric vector of exploration scores \(-\sigma^2(x)\). Minimizing this corresponds to selecting
+#' @return Numeric vector of exploration scores \eqn{-\sigma^2(x)}. Minimizing this corresponds to selecting
 #'   inputs with the largest posterior variance.
 #'
 #' @examples

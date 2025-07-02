@@ -22,20 +22,20 @@ UCB(x, data, cov, nv, D, d, quad = FALSE)
 \item{quad}{Logical; passed to \code{\link[BOSS]{predict_gp}}. If \code{TRUE}, uses a quadratic mean model.}
 }
 \value{
-Numeric vector of UCB values (higher is better). Internally returns \(-\mu(x) - \sqrt{\beta\,\Sigma(x)}\)
-  so that minimizing this corresponds to maximizing the classic UCB acquisition \(\mu + \sqrt{\beta\,\sigma^2}\).
+Numeric vector of UCB values (higher is better). Internally returns \eqn{-\mu(x) - \sqrt{\beta\,\Sigma(x)}}
+  so that minimizing this corresponds to maximizing the classic UCB acquisition \eqn{\mu + \sqrt{\beta\,\sigma^2}}.
 }
 \description{
 Compute the UCB acquisition value (to be maximized) at candidate inputs for Bayesian optimization.
 }
 \details{
-The exploration–exploitation tradeoff parameter \(\beta\) is set as
+The exploration–exploitation tradeoff parameter \eqn{\beta} is set as
 \deqn{\beta = 2\log\bigl(D^2\pi^2/(6\,d)\bigr).}
-The function calls \code{\link[BOSS]{predict_gp}} to obtain the posterior mean \(\mu(x)\)
-and variance \(\sigma^2(x)\), then computes
-\[
+The function calls \code{\link[BOSS]{predict_gp}} to obtain the posterior mean \eqn{\mu(x)}
+and variance \eqn{\sigma^2(x)}, then computes
+\deqn{
   \mathrm{UCB}(x) \;=\; \mu(x) \;+\;\sqrt{\beta\,\sigma^2(x)}.
-\]
+}
 }
 \examples{
 # Not run
