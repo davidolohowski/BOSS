@@ -27,10 +27,10 @@ Internally, uses the identity
   to compute all pairwise squared distances efficiently.
 }
 \examples{
-# Two 2D points
-X <- matrix(c(0,0, 1,1), nrow = 2, byrow = TRUE)
-Y <- matrix(c(1,0, 0,1), nrow = 2, byrow = TRUE)
-compute_sq_dist(X, Y)
+# Two 2D points (Not run)
+#X <- matrix(c(0,0, 1,1), nrow = 2, byrow = TRUE)
+# Y <- matrix(c(1,0, 0,1), nrow = 2, byrow = TRUE)
+# compute_sq_dist(X, Y)
 
 # Compare to manual calculation
 # (0,0) vs (1,0): 1^2 + 0^2 = 1

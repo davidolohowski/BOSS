@@ -2,16 +2,9 @@
 % Please edit documentation in R/02_stage2.R
 \name{fill_in}
 \alias{fill_in}
-\title{Fill-In by Greedy Selection with Candidate Sufficiency Checks}
+\title{Approximately fill-in by supplying a Sobol-sequence in the essential support and filter against existing design points.}
 \usage{
-fill_in(
-  boss_result,
-  h,
-  max_add = 100,
-  grid_n = 200,
-  boundary_n = 200,
-  verbose = 0
-)
+fill_in(boss_result, h, max_add = 100, n_sample_max = 10000, verbose = 0)
 }
 \arguments{
 \item{boss_result}{A \code{boss} object with non-NULL
@@ -22,27 +15,24 @@ and containing \code{lower} and \code{upper}.}
 
 \item{max_add}{Integer; maximum number of points to add (default 100).}
 
-\item{grid_n}{Integer; resolution per axis for interior lattice (default 200).}
+\item{n_sample_max}{Integer; maximum number of Sobol-sequence candidates to be added (default 10000).}
 
-\item{boundary_n}{Integer; number of boundary samples (default 200).}
-
-\item{verbose}{Integer in \{0,1,2,3\}; 0=silent, 1=summary, (>=)2=per-iteration.}
+\item{verbose}{Integer in \{0,1\}; 0=silent, 1=summary.}
 }
 \value{
 The updated \code{boss_result}, with its
   \code{essential_design_points} and \code{fill_in} refreshed.
 }
 \description{
-At each iteration:
-1. Builds a fixed pool of candidate points (interior lattice + uniform boundary),
-   truncated to the original box.
-2. Checks that the candidate pool size is at least \code{max_add}.
-3. Greedily selects the candidate farthest from the current design,
-   appends it, and recomputes \code{fill_in}.
-4. Stops when \code{fill_in <= h} or \code{max_add} points have been added.
+1. Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
+   \(n = \max\{n_sample_max, 2*\text{Vol}(\text{Original box})/h^D\}\).
+2. Generate a Sobol-sequence within the original box.
+3. Truncate the Sobol-sequence within the ellipsoid.
+4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
+5. Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates to ensure optimal covering over the ellipsoid.
+6. Recompute new fill-in based on the selected Sobol and existing design points.
 }
 \details{
-If the candidate pool is too small to potentially reach \code{max_add},
-or if even the best candidate cannot reduce \code{fill_in} below \code{h},
+If the candidate pool is over \code{max_add}, or if \code{fill_in} cannot be reduced below \code{h},
 a warning is issued.
 }

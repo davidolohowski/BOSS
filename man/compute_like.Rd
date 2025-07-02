@@ -66,28 +66,28 @@ model, optionally including a linear-plus-quadratic mean function.
   to yield the final negative log-likelihood.
 }
 \examples{
-# Zero-mean SE kernel likelihood
-x <- matrix(seq(0,1,length.out=5), ncol=1)
-y <- sin(2*pi*x)
-like0 <- compute_like(length_scale = 0.2,
-                      x = x, y = y,
-                      signal_var = 1,
-                      noise_var  = 1e-3,
-                      D = 1,
-                      prior_l_mean = 0,
-                      prior_l_sd   = 1,
-                      quad = FALSE,
-                      nu   = Inf)
+# Zero-mean SE kernel likelihood (Not run)
+# x <- matrix(seq(0,1,length.out=5), ncol=1)
+# y <- sin(2*pi*x)
+# like0 <- compute_like(length_scale = 0.2,
+#                        x = x, y = y,
+#                        signal_var = 1,
+#                        noise_var  = 1e-3,
+#                        D = 1,
+#                        prior_l_mean = 0,
+#                        prior_l_sd   = 1,
+#                        quad = FALSE,
+#                        nu   = Inf)
 
 # GP with quadratic mean
-like2 <- compute_like(length_scale = 0.3,
-                      x = x, y = y,
-                      signal_var = 1,
-                      noise_var  = 1e-3,
-                      D = 1,
-                      prior_l_mean = 0,
-                      prior_l_sd   = 1,
-                      quad = TRUE,
-                      nu   = Inf)
+# like2 <- compute_like(length_scale = 0.3,
+#                       x = x, y = y,
+#                        signal_var = 1,
+#                        noise_var  = 1e-3,
+#                        D = 1,
+#                        prior_l_mean = 0,
+#                        prior_l_sd   = 1,
+#                        quad = TRUE,
+#                        nu   = Inf)
 
 }

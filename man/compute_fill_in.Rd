@@ -2,18 +2,16 @@
 % Please edit documentation in R/02_stage2.R
 \name{compute_fill_in}
 \alias{compute_fill_in}
-\title{Approximate Fill-In Distance via Lattice Interior + Uniform Boundary Sampling (with Truncation)}
+\title{Approximate Fill-In Distance via Uniform Sampling (with Truncation)}
 \usage{
-compute_fill_in(boss_result, grid_n = 200, boundary_n = 200)
+compute_fill_in(boss_result, n_samples = 10000)
 }
 \arguments{
 \item{boss_result}{A \code{boss} object with non-NULL
 \code{essential_support}, \code{essential_design_points\$x_original},
 and containing \code{lower} and \code{upper}.}
 
-\item{grid_n}{Integer; number of equally spaced points per axis for the interior lattice (default 200).}
-
-\item{boundary_n}{Integer; number of random samples on the boundary (default 200).}
+\item{n_samples}{Integer; number of unifrom samples in the essential support to estimate the fill-in (default 10000).}
 }
 \value{
 The input \code{boss_result}, with \code{fill_in} updated.
@@ -22,9 +20,8 @@ The input \code{boss_result}, with \code{fill_in} updated.
 Estimate the fill-in distance
 \(\sup_{x\in\Omega}\min_j \|x - x_j\|\)
 by:
-1. Constructing a regular lattice inside the ellipsoid Ω,
-2. Sampling points uniformly on the ellipsoid boundary,
-3. Truncating all candidates to lie within the original \code{lower}/\code{upper} box,
-4. Computing for each candidate its nearest-design-point distance,
-5. Taking the maximum of these minima.
+1. Uniformly sample inside the ellipsoid Ω,
+2. Truncating all candidates to lie within the original \code{lower}/\code{upper} box,
+3. Computing for each candidate its nearest-design-point distance from the uniform sample,
+4. Taking the maximum of these minima.
 }

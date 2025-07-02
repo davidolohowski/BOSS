@@ -17,7 +17,7 @@ boss(
 )
 }
 \arguments{
-\item{func}{The objective function \code{f: [0,1]^D -> R}.}
+\item{func}{The objective function \code{f: [lower,upper]^D -> R}.}
 
 \item{D}{Integer; input dimension.}
 
@@ -37,11 +37,11 @@ The essential support is defined to capture around 1 - \code{alpha} of the poste
 \code{method}, \code{method.args}, \code{tol}.}
 
 \item{essup_opts}{List of options for the essential‐support stage:
-\code{boundary_initial}, plus any remaining arguments
-to \code{compute_fill_in()} (e.g. \code{grid_n}, \code{boundary_n}).}
+\code{alpha} to construct the essential support and \code{n_samples}
+for \code{compute_fill_in()}.}
 
 \item{fillin_opts}{List of options for the greedy \code{fill_in()} stage:
-\code{max_add}, \code{grid_n}, \code{boundary_n}.}
+\code{max_add}, \code{n_sample_max}.}
 
 \item{verbose}{Integer 0–3; for progress.}
 }
@@ -53,6 +53,6 @@ Runs the full two‐stage BOSS procedure:
   1) Bayesian sequential design via \code{BOSS_modal()},
   2) Hessian update at the mode,
   3) Essential‐support extraction and initial fill‐in,
-  4) Greedy fill‐in to a target spacing,
+  4) Approximate fill‐in to a target spacing,
   5) Final update of mode, Hessian, GP hyperparameters, and surrogate.
 }

@@ -38,9 +38,10 @@ and variance \(\sigma^2(x)\), then computes
 \]
 }
 \examples{
-cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
-data <- list(x = matrix(runif(20), ncol = 2),
-             y = rnorm(10))
-UCB(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3, D = 10, d = 2)
+# Not run
+# cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
+# data <- list(x = matrix(runif(20), ncol = 2),
+#               y = rnorm(10))
+# UCB(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3, D = 10, d = 2)
 
 }

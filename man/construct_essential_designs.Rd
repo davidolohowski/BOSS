@@ -2,29 +2,24 @@
 % Please edit documentation in R/02_stage2.R
 \name{construct_essential_designs}
 \alias{construct_essential_designs}
-\title{Extract Interior and Boundary Design Points for a \code{boss} Object}
+\title{Extract Design Points within the essential support for a \code{boss} Object}
 \usage{
-construct_essential_designs(boss_result, boundary_initial = 100)
+construct_essential_designs(boss_result)
 }
 \arguments{
 \item{boss_result}{A \code{boss} object containing non-NULL
 \code{essential_support}, and with \code{lower} and \code{upper} fields.}
-
-\item{boundary_initial}{Integer; number of boundary samples when \eqn{D >= 2} (default 100).}
 }
 \value{
 The same \code{boss_result}, with
   \code{essential_design_points} list:
   \describe{
-    \item{\code{x}}{Scaled points inside support + boundary samples (matrix).}
-    \item{\code{x_original}}{Original-space points inside support + boundary samples (matrix).}
-    \item{\code{y}}{Responses: real values for interior points, \code{NA} for boundary samples.}
+    \item{\code{x}}{Scaled points inside support (matrix).}
+    \item{\code{x_original}}{Original-space points inside support (matrix).}
+    \item{\code{y}}{Responses: real values for design points inside support.}
   }
 }
 \description{
 Given a \code{boss} object with \code{essential_support} computed (in original input space),
-builds \code{essential_design_points}, including:
-  1. all design points inside the ellipsoid,
-  2. sampled points on the ellipsoid boundary,
-  3. truncating any boundary samples to lie within the original \code{lower}–\code{upper} box.
+builds \code{essential_design_points} that contains all design points inside the ellipsoid.
 }

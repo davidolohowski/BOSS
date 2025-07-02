@@ -44,6 +44,8 @@ If \code{TRUE}, fit a linear-plus-quadratic mean model
 
 \item{upper}{Numeric vector of length D giving upper bounds.}
 
+\item{nu}{GP covariance smoothness. \eqn{\nu = \inf} represents squared-exponential kernel; \eqn{0 < \nu < \inf} represents the Matern kernel with smoothness ceiling(\nu) - 1.}
+
 \item{noise_var}{GP observation noise variance.}
 
 \item{modal_iter_check}{How often (in iterations) to check convergence via modal criteria.}

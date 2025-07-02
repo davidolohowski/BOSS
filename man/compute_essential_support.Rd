@@ -32,8 +32,8 @@ Compute and store the 1-\eqn{\alpha} level set (ellipsoidal support) defined by 
 Hessian at the mode in a \code{boss} object.
 }
 \examples{
-# Assuming `br` is a boss object with mode_hessian
-br <- compute_essential_support(br, alpha = 0.05)
-str(br$essential_support)
+# Assuming `br` is a boss object with mode_hessian (Not run)
+# br <- compute_essential_support(br, alpha = 0.05)
+# str(br$essential_support)
 
 }

@@ -26,9 +26,10 @@ Compute a variance-only acquisition value for Bayesian optimization,
 favoring points with the highest posterior uncertainty.
 }
 \examples{
-cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
-data <- list(x = matrix(runif(20), ncol = 2),
-             y = rnorm(10))
-EXPLORE(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3)
+# Not run
+# cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
+# data <- list(x = matrix(runif(20), ncol = 2),
+#             y = rnorm(10))
+# EXPLORE(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3)
 
 }

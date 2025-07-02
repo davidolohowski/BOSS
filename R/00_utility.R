@@ -13,10 +13,10 @@
 #'   \deqn{||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y}
 #'   to compute all pairwise squared distances efficiently.
 #' @examples
-#' # Two 2D points
-#' X <- matrix(c(0,0, 1,1), nrow = 2, byrow = TRUE)
-#' Y <- matrix(c(1,0, 0,1), nrow = 2, byrow = TRUE)
-#' compute_sq_dist(X, Y)
+#' # Two 2D points (Not run)
+#' #X <- matrix(c(0,0, 1,1), nrow = 2, byrow = TRUE)
+#' # Y <- matrix(c(1,0, 0,1), nrow = 2, byrow = TRUE)
+#' # compute_sq_dist(X, Y)
 #'
 #' # Compare to manual calculation
 #' # (0,0) vs (1,0): 1^2 + 0^2 = 1
@@ -68,15 +68,15 @@ compute_sq_dist <- function(X, Y) {
 #' Internally, for half-integer \code{nu} this is computed via an exact polynomial–exponential form.
 #'
 #' @examples
-#' # 1D SE kernel
-#' se_cov <- cov_generator(length_scale = 0.5, signal_var = 2, nu = Inf)
-#' x <- seq(0, 1, length.out = 5)
-#' se_cov(x, x)
+#' # 1D SE kernel (Not run)
+#' # se_cov <- cov_generator(length_scale = 0.5, signal_var = 2, nu = Inf)
+#' # x <- seq(0, 1, length.out = 5)
+#' # se_cov(x, x)
 #'
 #' # 2D Matérn kernel with nu = 1.5
-#' matern_cov <- cov_generator(length_scale = c(1, 2), signal_var = 1, nu = 1.5)
-#' X <- matrix(runif(10), ncol = 2)
-#' matern_cov(X, X)
+#' # matern_cov <- cov_generator(length_scale = c(1, 2), signal_var = 1, nu = 1.5)
+#' # X <- matrix(runif(10), ncol = 2)
+#' # matern_cov(X, X)
 #'
 #' @export
 cov_generator <- function(length_scale = 1, signal_var = 1, nu = Inf) {
@@ -197,18 +197,18 @@ cov_generator <- function(length_scale = 1, signal_var = 1, nu = Inf) {
 #' The posterior mean and covariance combine both the mean model and GP residuals.
 #'
 #' @examples
-#' # Zero-mean GP with SE kernel
-#' cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
-#' data <- list(x = seq(0, 1, length.out = 10),
-#'              y = sin(pi * seq(0, 1, length.out = 10)))
-#' preds <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
-#'                     noise_var = 1e-4, choice_cov = cov_fn)
-#' plot(preds$x, preds$mean, type = "l")
-#'
+#' # Zero-mean GP with SE kernel (Not run)
+#' # cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
+#' # data <- list(x = seq(0, 1, length.out = 10),
+#' #               y = sin(pi * seq(0, 1, length.out = 10)))
+#' # preds <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
+#' #                      noise_var = 1e-4, choice_cov = cov_fn)
+#' # plot(preds$x, preds$mean, type = "l")
+#' #
 #' # GP with quadratic mean
-#' preds_quad <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
-#'                          noise_var = 1e-4, choice_cov = cov_fn,
-#'                          quad = TRUE)
+#' # preds_quad <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
+#' #                         noise_var = 1e-4, choice_cov = cov_fn,
+#' #                       quad = TRUE)
 #'
 #' @importFrom MASS mvrnorm
 #' @export
@@ -349,29 +349,29 @@ predict_gp <- function(data,
 #'   to yield the final negative log-likelihood.
 #'
 #' @examples
-#' # Zero-mean SE kernel likelihood
-#' x <- matrix(seq(0,1,length.out=5), ncol=1)
-#' y <- sin(2*pi*x)
-#' like0 <- compute_like(length_scale = 0.2,
-#'                       x = x, y = y,
-#'                       signal_var = 1,
-#'                       noise_var  = 1e-3,
-#'                       D = 1,
-#'                       prior_l_mean = 0,
-#'                       prior_l_sd   = 1,
-#'                       quad = FALSE,
-#'                       nu   = Inf)
+#' # Zero-mean SE kernel likelihood (Not run)
+#' # x <- matrix(seq(0,1,length.out=5), ncol=1)
+#' # y <- sin(2*pi*x)
+#' # like0 <- compute_like(length_scale = 0.2,
+#' #                        x = x, y = y,
+#' #                        signal_var = 1,
+#' #                        noise_var  = 1e-3,
+#' #                        D = 1,
+#' #                        prior_l_mean = 0,
+#' #                        prior_l_sd   = 1,
+#' #                        quad = FALSE,
+#' #                        nu   = Inf)
 #'
 #' # GP with quadratic mean
-#' like2 <- compute_like(length_scale = 0.3,
-#'                       x = x, y = y,
-#'                       signal_var = 1,
-#'                       noise_var  = 1e-3,
-#'                       D = 1,
-#'                       prior_l_mean = 0,
-#'                       prior_l_sd   = 1,
-#'                       quad = TRUE,
-#'                       nu   = Inf)
+#' # like2 <- compute_like(length_scale = 0.3,
+#' #                       x = x, y = y,
+#' #                        signal_var = 1,
+#' #                        noise_var  = 1e-3,
+#' #                        D = 1,
+#' #                        prior_l_mean = 0,
+#' #                        prior_l_sd   = 1,
+#' #                        quad = TRUE,
+#' #                        nu   = Inf)
 #'
 #' @export
 compute_like <- function(length_scale, x, y,
@@ -464,10 +464,11 @@ compute_like <- function(length_scale, x, y,
 #' \]
 #'
 #' @examples
-#' cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
-#' data <- list(x = matrix(runif(20), ncol = 2),
-#'              y = rnorm(10))
-#' UCB(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3, D = 10, d = 2)
+#' # Not run
+#' # cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
+#' # data <- list(x = matrix(runif(20), ncol = 2),
+#' #               y = rnorm(10))
+#' # UCB(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3, D = 10, d = 2)
 #'
 #' @export
 UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
@@ -496,11 +497,13 @@ UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
 #'   inputs with the largest posterior variance.
 #'
 #' @examples
-#' cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
-#' data <- list(x = matrix(runif(20), ncol = 2),
-#'              y = rnorm(10))
-#' EXPLORE(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3)
+#' # Not run
+#' # cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
+#' # data <- list(x = matrix(runif(20), ncol = 2),
+#' #             y = rnorm(10))
+#' # EXPLORE(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3)
 #'
+#' @export
 EXPLORE <- function(x, data, cov, nv, quad = FALSE){
   fnew <- predict_gp(data, x, choice_cov = cov, noise_var = nv, quad = quad)
 

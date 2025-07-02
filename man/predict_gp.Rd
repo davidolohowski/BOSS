@@ -57,17 +57,17 @@ and coefficients \eqn{\beta} are estimated via generalized least squares.
 The posterior mean and covariance combine both the mean model and GP residuals.
 }
 \examples{
-# Zero-mean GP with SE kernel
-cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
-data <- list(x = seq(0, 1, length.out = 10),
-             y = sin(pi * seq(0, 1, length.out = 10)))
-preds <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
-                    noise_var = 1e-4, choice_cov = cov_fn)
-plot(preds$x, preds$mean, type = "l")
-
+# Zero-mean GP with SE kernel (Not run)
+# cov_fn <- cov_generator(length_scale = 1, signal_var = 1, nu = Inf)
+# data <- list(x = seq(0, 1, length.out = 10),
+#               y = sin(pi * seq(0, 1, length.out = 10)))
+# preds <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
+#                      noise_var = 1e-4, choice_cov = cov_fn)
+# plot(preds$x, preds$mean, type = "l")
+#
 # GP with quadratic mean
-preds_quad <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
-                         noise_var = 1e-4, choice_cov = cov_fn,
-                         quad = TRUE)
+# preds_quad <- predict_gp(data, x_pred = seq(0, 1, length.out = 50),
+#                         noise_var = 1e-4, choice_cov = cov_fn,
+#                       quad = TRUE)
 
 }

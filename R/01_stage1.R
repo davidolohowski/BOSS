@@ -11,6 +11,7 @@
 #' @param D Input dimension.
 #' @param lower Numeric vector of length D giving lower bounds (in original scale).
 #' @param upper Numeric vector of length D giving upper bounds.
+#' @param nu GP covariance smoothness. \eqn{\nu = \inf} represents squared-exponential kernel; \eqn{0 < \nu < \inf} represents the Matern kernel with smoothness ceiling(\nu) - 1.
 #' @param quad Logical; if \code{FALSE} (default), use a zero-mean GP model.
 #'   If \code{TRUE}, fit a linear-plus-quadratic mean model
 #'   \eqn{\beta_0 + x^\top \beta_1 + (x \otimes x)^\top \beta_2} alongside the GP.
@@ -411,9 +412,9 @@ update_hessian <- function(boss_result,
 #'   }
 #'
 #' @examples
-#' # Assuming `br` is a boss object with mode_hessian
-#' br <- compute_essential_support(br, alpha = 0.05)
-#' str(br$essential_support)
+#' # Assuming `br` is a boss object with mode_hessian (Not run)
+#' # br <- compute_essential_support(br, alpha = 0.05)
+#' # str(br$essential_support)
 #'
 #' @importFrom stats qchisq
 #' @export

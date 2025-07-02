@@ -41,14 +41,14 @@ then computes the pairwise squared Euclidean distances.
 Internally, for half-integer \code{nu} this is computed via an exact polynomial–exponential form.
 }
 \examples{
-# 1D SE kernel
-se_cov <- cov_generator(length_scale = 0.5, signal_var = 2, nu = Inf)
-x <- seq(0, 1, length.out = 5)
-se_cov(x, x)
+# 1D SE kernel (Not run)
+# se_cov <- cov_generator(length_scale = 0.5, signal_var = 2, nu = Inf)
+# x <- seq(0, 1, length.out = 5)
+# se_cov(x, x)
 
 # 2D Matérn kernel with nu = 1.5
-matern_cov <- cov_generator(length_scale = c(1, 2), signal_var = 1, nu = 1.5)
-X <- matrix(runif(10), ncol = 2)
-matern_cov(X, X)
+# matern_cov <- cov_generator(length_scale = c(1, 2), signal_var = 1, nu = 1.5)
+# X <- matrix(runif(10), ncol = 2)
+# matern_cov(X, X)
 
 }

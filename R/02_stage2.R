@@ -14,6 +14,9 @@
 #'     \item{\code{y}}{Responses: real values for design points inside support.}
 #'   }
 #'
+#' @importFrom fields rdist
+#' @importFrom randtoolbox sobol
+#'
 #' @export
 construct_essential_designs <- function(boss_result) {
   # prerequisites
