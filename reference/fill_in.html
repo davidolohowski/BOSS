@@ -7,21 +7,25 @@
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Fill-in essential support with a Sobol-sequence — fill_in"><meta name="description" content="Given a boss object with essential_support and essential_design_points$x_original, this function will
 approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
-1. Based on the required fill-in distance h, compute the required number of quasi-uniform design points by
+Based on the required fill-in distance h, compute the required number of quasi-uniform design points by
    $$n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.$$
-2. Generate a Sobol-sequence within the original box.
-3. Truncate the Sobol-sequence outside the ellipsoid.
-4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
-5. Add in a maximum of max_add number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
-6. Recompute new fill-in based on the selected Sobol and existing design points."><meta property="og:description" content="Given a boss object with essential_support and essential_design_points$x_original, this function will
+Generate a Sobol-sequence within the original box.
+Truncate the Sobol-sequence outside the ellipsoid.
+Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
+Add in a maximum of max_add number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
+Recompute new fill-in based on the selected Sobol and existing design points.
+
+"><meta property="og:description" content="Given a boss object with essential_support and essential_design_points$x_original, this function will
 approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
-1. Based on the required fill-in distance h, compute the required number of quasi-uniform design points by
+Based on the required fill-in distance h, compute the required number of quasi-uniform design points by
    $$n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.$$
-2. Generate a Sobol-sequence within the original box.
-3. Truncate the Sobol-sequence outside the ellipsoid.
-4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
-5. Add in a maximum of max_add number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
-6. Recompute new fill-in based on the selected Sobol and existing design points."></head><body>
+Generate a Sobol-sequence within the original box.
+Truncate the Sobol-sequence outside the ellipsoid.
+Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within h of existing points.
+Add in a maximum of max_add number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
+Recompute new fill-in based on the selected Sobol and existing design points.
+
+"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -29,7 +33,7 @@ approximately fill-in with a Sobol-sequence in the essential support and filter 
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,15 +59,14 @@ approximately fill-in with a Sobol-sequence in the essential support and filter 
 
     <div class="ref-description section level2">
     <p>Given a <code>boss</code> object with <code>essential_support</code> and <code>essential_design_points$x_original</code>, this function will
-approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
-1. Based on the required fill-in distance <code>h</code>, compute the required number of quasi-uniform design points by
-   $$n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.$$
-2. Generate a Sobol-sequence within the original box.
-3. Truncate the Sobol-sequence outside the ellipsoid.
-4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within <code>h</code> of existing points.
-5. Add in a maximum of <code>max_add</code> number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
-6. Recompute new fill-in based on the selected Sobol and existing design points.</p>
-    </div>
+approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:</p><ol><li><p>Based on the required fill-in distance <code>h</code>, compute the required number of quasi-uniform design points by
+   $$n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.$$</p></li>
+<li><p>Generate a Sobol-sequence within the original box.</p></li>
+<li><p>Truncate the Sobol-sequence outside the ellipsoid.</p></li>
+<li><p>Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within <code>h</code> of existing points.</p></li>
+<li><p>Add in a maximum of <code>max_add</code> number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.</p></li>
+<li><p>Recompute new fill-in based on the selected Sobol and existing design points.</p></li>
+</ol></div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
