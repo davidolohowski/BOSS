@@ -71,7 +71,7 @@ plot(br_update)
 
 ## 2-D Example
 
-Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of \(N((0,0),\text{diag}(1,1))\) random variable.
+Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of a \(N((0,0),\text{diag}(1,1))\) random variable.
 
 ```{r exmple2d}
 f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), log = T)
