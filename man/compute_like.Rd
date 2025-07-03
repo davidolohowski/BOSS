@@ -36,7 +36,7 @@ Defaults to \code{Inf}, selecting the Squared Exponential kernel.}
 }
 \value{
 A numeric scalar giving the negative log-likelihood (up to an additive constant).
-  Extremely large values (\eqn{>1e^{20}}) are returned if the computation produces NaN, NA,
+  Extremely large values (\eqn{10^{20}}) are returned if the computation produces NaN, NA,
   or infinite results.
 }
 \description{

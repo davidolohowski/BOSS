@@ -33,9 +33,6 @@ compute_sq_dist <- function(X, Y) {
   return(sq_dist)
 }
 
-
-
-
 #' Generate a General SE/Matérn Covariance Function
 #'
 #' Creates a covariance function that computes either the Squared Exponential (SE)
@@ -324,7 +321,7 @@ predict_gp <- function(data,
 #'   Defaults to \code{Inf}, selecting the Squared Exponential kernel.
 #'
 #' @return A numeric scalar giving the negative log-likelihood (up to an additive constant).
-#'   Extremely large values (\eqn{>1e^{20}}) are returned if the computation produces NaN, NA,
+#'   Extremely large values (\eqn{10^{20}}) are returned if the computation produces NaN, NA,
 #'   or infinite results.
 #'
 #' @details
@@ -438,9 +435,6 @@ compute_like <- function(length_scale, x, y,
   }
 }
 
-
-
-
 #' Upper Confidence Bound (UCB) Acquisition Function
 #'
 #' Compute the UCB acquisition value (to be maximized) at candidate inputs for Bayesian optimization.
@@ -512,4 +506,170 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
   # Compute the pure exploration acquisition function
   return(as.numeric(-fnew$var))
 }
+
+
+#' Estimate Hessian at a point based on sattered data
+#'
+#' Estimate the Hessian at a given point \code{x} based on its neighboring scattered design points \code{X} and their evaluations \code{y}
+#' using locally-weighted polynomial regression (moving least squares).
+#'
+#' @param x A A numeric vector of length \code{D} specifying the point at which to estimate Hessian.
+#' @param X A \code{nXD} matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).
+#' @param y A numeric vector of length \code{n} giving the function evaluation at \code{X}.
+#' @param h A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.
+#' @param kernel A character string specifying the type of kernel. Should be one of \code{"RBF"} (Default), \code{"Epanech"}, \code{"Tri-cube"}, \code{"Triangular"}.
+#'
+#' @return A \code{DxD} matrix giving an estimate of the Hessian at \code{x}.
+#'
+#' @details
+#' The method performs a weighted least squares fit of a local quadratic polynomial centered at the point \eqn{x}.
+#' The basis consists of all monomials of total degree up to 2:
+#' \deqn{
+#' \phi(z) = [1, z_1, \dots, z_d, z_1^2, z_1 z_2, \dots, z_d^2]^\top
+#' }
+#' where \eqn{z_i = X_i - x_i} is the centered design matrix.
+#'
+#' Kernel weights are computed as:
+#' \deqn{
+#' w_i = K\left(\frac{\|X_i - x\|}{h}\right)
+#' }
+#' where \eqn{K(\cdot)} is the chosen kernel function. Supported kernels include:
+#'
+#' - RBF: \eqn{K(r) = \exp\left(-\frac{1}{2} r^2\right)}
+#'
+#' - Epanechnikov: \eqn{K(r) = \frac{3}{4}(1 - r^2)_+}
+#'
+#' - Tri-cube: \eqn{K(r) = (1 - r^3)^3_+}
+#'
+#' - Triangular: \eqn{K(r) = (1 - r)_+}
+#'
+#' The design matrix \eqn{\Phi} is built by evaluating all degree-0, 1, and 2 monomials at each centered design point.
+#'
+#' The weighted normal equations are solved:
+#' \deqn{
+#' \hat{\beta} = (\Phi^\top W \Phi)^{-1} \Phi^\top W y
+#' }
+#' The estimated Hessian matrix is formed by applying second-order derivative operators \eqn{D^\alpha} to the basis at the origin:
+#' \deqn{
+#' H_{ij} = \sum_{k=1}^N y_k \cdot a_k^{(\alpha)}, \quad \text{where } \alpha = e_i + e_j
+#' }
+#' and \eqn{a^{(\alpha)} = W \Phi (\Phi^\top W \Phi)^{-1} D^\alpha \phi(0)}.
+#'
+#' The function ensures that the output matrix \eqn{H} is symmetric by construction.
+#'
+#' @examples
+#' # (Not run)
+#' set.seed(42)
+#' f <- function(x) sin(x[1]) + cos(x[2]) + x[1]*x[2]
+#' X <- matrix(runif(20, -0.1, 0.1), ncol = 2)
+#' y <- apply(X, 1, f)
+#' x0 <- c(0, 0)
+#' H <- estimate_hessian(x0, X, y)
+#' print(H)
+#' H_true <- numDeriv::hessian(f, x0)
+#' print(H_true)
+#' @export
+estimate_hessian <- function(x, X, y, h = NULL, kernel = 'RBF') {
+
+  # Center design points around x
+  Z <- sweep(X, 2, x)
+
+  if(is.null(h)){
+    h <- mean(sqrt(rowSums(Z^2)))
+  }
+
+  if(! kernel %in% c("RBF", "Epanech", "Tri-cube", "Triangular")){
+    stop('Kernel must be one of "RBF", "Epanech", "Tri-cube", "Triangular"!')
+  }
+  else if (kernel == 'RBF'){
+    kernel <- function(r) exp(-0.5*r^2)
+  }
+  else if (kernel == 'Epanech'){
+    kernel <- function(r) pmax(0, 3/4*(1-r^2))
+  }
+  else if(kernel == 'Tri-cube'){
+    kernel <- function(r) pmax(0, (1-r^3)^3)
+  }
+  else{
+    kernel <- function(r) pmax(0, 1-r)
+  }
+
+  N <- nrow(X)
+  d <- ncol(X)
+
+  # Generate all monomial multi-indices up to degree 2
+  multi_indices <- function(d, deg) {
+    if (deg == 0) return(matrix(0, 1, d))
+    if (d == 1) return(matrix(deg, 1, 1))
+    out <- NULL
+    for (i in 0:deg) {
+      sub <- multi_indices(d - 1, deg - i)
+      out <- rbind(out, cbind(i, sub))
+    }
+    return(out)
+  }
+
+  basis_idx <- do.call(rbind, lapply(0:2, function(k) multi_indices(d, k)))
+  Q <- nrow(basis_idx)
+
+  # Build design matrix Phi (N x Q)
+  Phi <- matrix(0, N, Q)
+  for (i in 1:Q) {
+    exponents <- basis_idx[i, ]
+    Phi[, i] <- apply(Z^matrix(rep(exponents, each = N), ncol = d), 1, prod)
+  }
+
+  # Kernel weights
+  r <- sqrt(rowSums(Z^2)) / h
+  w <- kernel(r)
+  W <- diag(w)
+
+  # Normal matrix
+  XtWX <- t(Phi) %*% W %*% Phi
+  XtWX_inv <- solve(XtWX)
+
+  # All second-order multi-indices (symmetric combinations)
+  deriv_idx <- list()
+  for (i in 1:d) {
+    for (j in i:d) {
+      alpha <- integer(d)
+      alpha[i] <- alpha[i] + 1
+      alpha[j] <- alpha[j] + 1
+      deriv_idx[[length(deriv_idx) + 1]] <- list(alpha = alpha, i = i, j = j)
+    }
+  }
+
+  # Function to compute D^alpha phi(0)
+  derivative_vector <- function(alpha, basis_idx) {
+    sapply(1:nrow(basis_idx), function(i) {
+      beta <- basis_idx[i, ]
+      if (all(beta >= alpha)) {
+        prod(sapply(1:length(alpha), function(j) {
+          if (alpha[j] == 0) return(1)
+          prod(beta[j]:(beta[j] - alpha[j] + 1))
+        }))
+      } else {
+        0
+      }
+    })
+  }
+
+  # Compute Hessian entries
+  H <- matrix(0, d, d)
+  for (entry in deriv_idx) {
+    alpha <- entry$alpha
+    i <- entry$i
+    j <- entry$j
+    D_alpha_phi <- derivative_vector(alpha, basis_idx)
+    a_alpha <- W %*% Phi %*% XtWX_inv %*% D_alpha_phi
+    value <- sum(a_alpha * y)
+    H[i, j] <- value
+    H[j, i] <- value  # symmetry
+  }
+
+  return(H)
+}
+
+
+
 
