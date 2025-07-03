@@ -39,7 +39,7 @@ then computes the pairwise squared Euclidean distances.
   \deqn{K_{ij} = \sigma^2 \frac{2^{1-\nu}}{\Gamma(\nu)} \bigl(\sqrt{2\nu}\,r_{ij}\bigr)^\nu
     K_\nu\bigl(\sqrt{2\nu}\,r_{ij}\bigr),}
   where \eqn{r_{ij} = \|x_i - x'_j\|}.
-Internally, for half-integer \code{nu} this is computed via an exact polynomial–exponential form.
+Internally, for simplicity, the value of \code{nu} is first transformed to \eqn{\lceil\nu\rceil}, and a half integer of \eqn{\lceil\nu\rceil - 1/2} is implemented so that an exact polynomial–exponential form can be computed.
 }
 \examples{
 # 1D SE kernel (Not run)

@@ -20,8 +20,10 @@ The input \code{boss_result}, with \code{fill_in} updated.
 Estimate the fill-in distance
 \deqn{\sup_{x\in\Omega}\min_j \|x - x_j\|}
 by:
-1. Uniformly sample inside the ellipsoid Ω,
-2. Truncating all candidates to lie within the original \code{lower}/\code{upper} box,
-3. Computing for each candidate its nearest-design-point distance from the uniform sample,
-4. Taking the maximum of these minima.
+\enumerate{
+\item Uniformly sample inside the ellipsoid Ω,
+\item Truncating all candidates to lie within the original \code{lower}/\code{upper} box,
+\item Computing for each candidate its nearest-design-point distance from the uniform sample,
+\item Taking the maximum of these minima.
+}
 }

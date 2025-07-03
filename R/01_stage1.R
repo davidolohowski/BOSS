@@ -1,9 +1,11 @@
 #' Bayesian Optimization via Mode-Seeking Surrogate (BOSS)
 #'
 #' Run a GP-based sequential design algorithm that (every \code{update_step} iter):
-#'   1. Re-estimates GP length-scale/noise;
-#'   2. Optimizes an acquisition function (UCB) to pick the next \code{x};
-#'   3. Optionally checks a modal‐based convergence criterion.
+#' \enumerate{
+#'   \item Re-estimates GP length-scale/noise;
+#'   \item Optimizes an acquisition function (UCB) to pick the next \code{x};
+#'   \item Optionally checks a modal‐based convergence criterion.
+#' }
 #'
 #' @param func A function \code{f: [0,1]^D -> R} to optimize.
 #' @param update_step Integer; how often to refit the GP hyperparameters.

@@ -26,13 +26,15 @@ The updated \code{boss_result}, with its
 \description{
 Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
 approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
-1. Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
+\enumerate{
+\item Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
    \deqn{n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.}
-2. Generate a Sobol-sequence within the original box.
-3. Truncate the Sobol-sequence outside the ellipsoid.
-4. Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within \code{h} of existing points.
-5. Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
-6. Recompute new fill-in based on the selected Sobol and existing design points.
+\item Generate a Sobol-sequence within the original box.
+\item Truncate the Sobol-sequence outside the ellipsoid.
+\item Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within \code{h} of existing points.
+\item Add in a maximum of \code{max_add} number selected fill-in Sobol-candidates with optimal covering over the ellipsoid ensured.
+\item Recompute new fill-in based on the selected Sobol and existing design points.
+}
 }
 \details{
 If the candidate pool is over \code{max_add}, or if \code{fill_in} cannot be reduced below \code{h},

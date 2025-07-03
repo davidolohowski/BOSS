@@ -19,8 +19,10 @@ The updated \code{boss_result}, with fields
 \description{
 Given a \code{boss_result} with \code{essential_design_points} already constructed,
 this function will:
-1. Fill in any missing responses (\code{NA}) by evaluating the objective.
-2. Recompute the mode and Hessian at the mode.
-3. Re‐fit the GP hyperparameters (length‐scale and signal variance).
-4. Rebuild the surrogate function closure with the updated design.
+\enumerate{
+ \item Fill in any missing responses (\code{NA}) by evaluating the objective.
+ \item Recompute the mode and Hessian at the mode.
+ \item Re‐fit the GP hyperparameters (length‐scale and signal variance).
+ \item Rebuild the surrogate function closure with the updated design.
+}
 }
