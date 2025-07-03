@@ -8,7 +8,7 @@
 print.boss <- function(x, ...) {
   cat("Fitted BOSS Object\n")
   cat(strrep("-", 20), "\n")
-  cat("Dimension of the conditioning parameter: ", x$D, "\n")
+  cat("Dimension of the parameter space: ", x$D, "\n")
   cat("Total number of design points placed in the first stage: ",
       nrow(x$design_points$x_original), "\n")
   if (!is.null(x$essential_design_points$x_original)) {
