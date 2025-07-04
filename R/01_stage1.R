@@ -365,6 +365,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' Note that \code{local.poly} balances between theoretical accuracy and computational budget. \code{num.obj} is the most computationally intense while \code{num.GP} is the cheapest, but does not have theoretical guarantee.
 #'
 #' @importFrom numDeriv hessian
+#' @importFrom lhs randomLHS
 #' @export
 update_hessian <- function(boss_result,
                            approach      = 'local.poly',
@@ -410,10 +411,10 @@ update_hessian <- function(boss_result,
   else{
     # compute Hessian via locally weighted polynomial regression
     if(is.null(local.poly.args$bw)){
-      bw <- local.poly.args$eps / 2*D^0.4
+      bw <- D^0.4
     }
     else{
-      bw <- local.poly.args$bw
+      bw <- local.poly.args$bw/ (local.poly.args$eps/2)
     }
 
     required_neighbors <- (D+2)*(D+1)
@@ -430,7 +431,7 @@ update_hessian <- function(boss_result,
       Z <- Z / sqrt(rowSums(Z^2))               # Normalize to unit sphere
 
       # LHS for radius component
-      r <- runif(required_neighbors)^(1 / D)  # Ensure shape is numeric vector
+      r <- lhs::randomLHS(required_neighbors, 1)[,1]^(1 / D)  # Ensure shape is numeric vector
       X_add <- Z * (local.poly.args$eps / 2 * r)     # Scale by radius
 
       # Shift to center at mode_point
@@ -457,9 +458,15 @@ update_hessian <- function(boss_result,
       X_local <- xmat_neighbor
       y_local <- y_neighbor
     }
-    H <- estimate_hessian(mode_point, X_local, y_local,
+
+    # === Scale X_local to lie in unit ball centered at 0 for numerical stability ===
+    # Center at mode_point
+    X_local_s <- sweep(X_local, 2, mode_point, FUN = "-")
+    X_local_s <- X_local_s / (local.poly.args$eps / 2)
+
+    H <- estimate_hessian(mode_point, X_local_s, y_local,
                           bw = bw,
-                          kernel = local.poly.args$kernel)
+                          kernel = local.poly.args$kernel)/(local.poly.args$eps / 2)^2
   }
 
   # check negative semi-definiteness: all eigenvalues <= tol
