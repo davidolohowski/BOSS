@@ -17,7 +17,7 @@ Supports both zero-mean GP and a linear-plus-quadratic mean model."></head><body
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.24</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.25</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,11 +103,11 @@ If <code>TRUE</code>, fit a linear-plus-quadratic mean model
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>For the zero-mean case (<code>quad = FALSE</code>), the function:</p><ul><li><p>Constructs \(K_{oo}, K_{op}, K_{pp}\) via <code>choice_cov</code>.</p></li>
-<li><p>Adds <code>noise_var</code> to the diagonal of \(K_{oo}\) and computes
+    <p>For the zero-mean case (<code>quad = FALSE</code>), the function:</p><ul><li><p>Constructs \(K_{\mathrm{oo}}, K_{\mathrm{op}}, K_{\mathrm{pp}}\) via <code>choice_cov</code>.</p></li>
+<li><p>Adds <code>noise_var</code> to the diagonal of \(K_{\mathrm{oo}}\) and computes
     its Cholesky factor <code>L</code>.</p></li>
-<li><p>Computes the conditional mean \(K_{op} L^{-T} L^{-1} y\) and
-    covariance \(K_{pp} - K_{op} L^{-T} L^{-1} K_{op}^T\).</p></li>
+<li><p>Computes the conditional mean \(K_{\mathrm{op}} L^{-\top} L^{-1} y\) and
+    covariance \(K_{\mathrm{pp}} - K_{\mathrm{op}} L^{-T} L^{-1} K_{\mathrm{op}}^\top\).</p></li>
 </ul><p>If <code>quad = TRUE</code>, a design matrix with intercept, linear, and
 unique quadratic terms is built for both observed and prediction inputs,
 and coefficients \(\beta\) are estimated via generalized least squares.

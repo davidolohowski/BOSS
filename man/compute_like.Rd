@@ -48,11 +48,11 @@ model, optionally including a linear-plus-quadratic mean function.
 \enumerate{
  \item Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
   \code{\link[BOSS]{cov_generator}}.
- \item Compute Cholesky factor \eqn{L L^T = C}.
+ \item Compute Cholesky factor \eqn{L L^\top = C}.
  \item Log-determinant: \eqn{\log\det(C) = 2\sum\log(\mathrm{diag}(L))}.
  \item Precision \eqn{Q = C^{-1} = \texttt{chol2inv}(L)}.
 . \item Negative log-likelihood:
-  \deqn{\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
+  \deqn{\frac{1}{2}\,y^\top Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
 }
 
 \textbf{GP with quadratic mean} (\code{quad = TRUE}):

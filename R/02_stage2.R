@@ -60,7 +60,7 @@ construct_essential_designs <- function(boss_result) {
 #' \deqn{\sup_{x\in\Omega}\min_j \|x - x_j\|}
 #' by:
 #' \enumerate{
-#' \item Uniformly sample inside the ellipsoid Ω,
+#' \item Uniformly sample inside the ellipsoid \eqn{\Omega},
 #' \item Truncating all candidates to lie within the original \code{lower}/\code{upper} box,
 #' \item Computing for each candidate its nearest-design-point distance from the uniform sample,
 #' \item Taking the maximum of these minima.

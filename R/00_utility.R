@@ -183,11 +183,11 @@ cov_generator <- function(length_scale = 1, signal_var = 1, nu = Inf) {
 #' @details
 #' For the zero-mean case (\code{quad = FALSE}), the function:
 #' \itemize{
-#'   \item Constructs \eqn{K_{oo}, K_{op}, K_{pp}} via \code{choice_cov}.
-#'   \item Adds \code{noise_var} to the diagonal of \eqn{K_{oo}} and computes
+#'   \item Constructs \eqn{K_{\mathrm{oo}}, K_{\mathrm{op}}, K_{\mathrm{pp}}} via \code{choice_cov}.
+#'   \item Adds \code{noise_var} to the diagonal of \eqn{K_{\mathrm{oo}}} and computes
 #'     its Cholesky factor \code{L}.
-#'   \item Computes the conditional mean \eqn{K_{op} L^{-T} L^{-1} y} and
-#'     covariance \eqn{K_{pp} - K_{op} L^{-T} L^{-1} K_{op}^T}.
+#'   \item Computes the conditional mean \eqn{K_{\mathrm{op}} L^{-\top} L^{-1} y} and
+#'     covariance \eqn{K_{\mathrm{pp}} - K_{\mathrm{op}} L^{-T} L^{-1} K_{\mathrm{op}}^\top}.
 #' }
 #' If \code{quad = TRUE}, a design matrix with intercept, linear, and
 #' unique quadratic terms is built for both observed and prediction inputs,
@@ -329,11 +329,11 @@ predict_gp <- function(data,
 #' \enumerate{
 #'  \item Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
 #'   \code{\link[BOSS]{cov_generator}}.
-#'  \item Compute Cholesky factor \eqn{L L^T = C}.
+#'  \item Compute Cholesky factor \eqn{L L^\top = C}.
 #'  \item Log-determinant: \eqn{\log\det(C) = 2\sum\log(\mathrm{diag}(L))}.
 #'  \item Precision \eqn{Q = C^{-1} = \texttt{chol2inv}(L)}.
 #'. \item Negative log-likelihood:
-#'   \deqn{\frac{1}{2}\,y^T Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
+#'   \deqn{\frac{1}{2}\,y^\top Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
 #' }
 #'
 #' \textbf{GP with quadratic mean} (\code{quad = TRUE}):

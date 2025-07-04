@@ -44,7 +44,9 @@ If \code{TRUE}, fit a linear-plus-quadratic mean model
 
 \item{upper}{Numeric vector of length D giving upper bounds.}
 
-\item{nu}{GP covariance smoothness. \eqn{\nu = \infty} represents squared-exponential kernel; \eqn{0 < \nu < \infty} represents the Matern kernel with smoothness \eqn{\lceil\nu\rceil - 1}.}
+\item{nu}{GP covariance smoothness. \eqn{\nu = \infty} represents squared-exponential kernel;
+\eqn{3 < \nu < \infty} represents the Matern kernel with smoothness \eqn{\lceil\nu\rceil - 1/2}.
+\eqn{\nu > 3} is required to ensure convergence properties.}
 
 \item{noise_var}{GP observation noise variance.}
 

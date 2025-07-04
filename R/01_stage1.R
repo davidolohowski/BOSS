@@ -13,7 +13,9 @@
 #' @param D Input dimension.
 #' @param lower Numeric vector of length D giving lower bounds (in original scale).
 #' @param upper Numeric vector of length D giving upper bounds.
-#' @param nu GP covariance smoothness. \eqn{\nu = \infty} represents squared-exponential kernel; \eqn{0 < \nu < \infty} represents the Matern kernel with smoothness \eqn{\lceil\nu\rceil - 1}.
+#' @param nu GP covariance smoothness. \eqn{\nu = \infty} represents squared-exponential kernel;
+#' \eqn{3 < \nu < \infty} represents the Matern kernel with smoothness \eqn{\lceil\nu\rceil - 1/2}.
+#' \eqn{\nu > 3} is required to ensure convergence properties.
 #' @param quad Logical; if \code{FALSE} (default), use a zero-mean GP model.
 #'   If \code{TRUE}, fit a linear-plus-quadratic mean model
 #'   \eqn{\beta_0 + x^\top \beta_1 + (x \otimes x)^\top \beta_2} alongside the GP.
@@ -46,6 +48,7 @@
 #' @importFrom optimx multistart
 #' @importFrom numDeriv hessian
 #' @importFrom MASS mvrnorm
+#' @export
 BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
                        quad = FALSE,
                        lower = rep(0, D), upper = rep(1, D),
@@ -73,6 +76,10 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
   # Check if dimensions of lower and upper bounds match.
   if(length(lower) != D || length(upper) != D) {
     stop("lower and upper must have the same length as the function's input dimension")
+  }
+
+  if(nu <= 3){
+    stop('GP kernel smoothness parameter must be nu > 3.')
   }
 
   # Initialize matrices/vectors to store evaluations.

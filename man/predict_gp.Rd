@@ -45,11 +45,11 @@ Supports both zero-mean GP and a linear-plus-quadratic mean model.
 \details{
 For the zero-mean case (\code{quad = FALSE}), the function:
 \itemize{
-  \item Constructs \eqn{K_{oo}, K_{op}, K_{pp}} via \code{choice_cov}.
-  \item Adds \code{noise_var} to the diagonal of \eqn{K_{oo}} and computes
+  \item Constructs \eqn{K_{\mathrm{oo}}, K_{\mathrm{op}}, K_{\mathrm{pp}}} via \code{choice_cov}.
+  \item Adds \code{noise_var} to the diagonal of \eqn{K_{\mathrm{oo}}} and computes
     its Cholesky factor \code{L}.
-  \item Computes the conditional mean \eqn{K_{op} L^{-T} L^{-1} y} and
-    covariance \eqn{K_{pp} - K_{op} L^{-T} L^{-1} K_{op}^T}.
+  \item Computes the conditional mean \eqn{K_{\mathrm{op}} L^{-\top} L^{-1} y} and
+    covariance \eqn{K_{\mathrm{pp}} - K_{\mathrm{op}} L^{-T} L^{-1} K_{\mathrm{op}}^\top}.
 }
 If \code{quad = TRUE}, a design matrix with intercept, linear, and
 unique quadratic terms is built for both observed and prediction inputs,

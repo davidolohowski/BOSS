@@ -3,6 +3,7 @@
 S3method(plot,boss)
 S3method(print,boss)
 S3method(summary,boss)
+export(BOSS_modal)
 export(EXPLORE)
 export(UCB)
 export(boss)
