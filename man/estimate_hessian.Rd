@@ -13,9 +13,9 @@ estimate_hessian(x, X, y, bw = 1, kernel = "Epanech")
 
 \item{y}{A numeric vector of length \code{n} giving the function evaluation at \code{X}.}
 
-\item{bw}{A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.}
+\item{bw}{A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to \code{1}.}
 
-\item{kernel}{A character string specifying the type of kernel. Should be one of \code{"RBF"} (Default), \code{"Epanech"}, \code{"Tri-cube"}, \code{"Triangular"}.}
+\item{kernel}{A character string specifying the type of kernel. Should be one of \code{"Epanech"} (Default), \code{"RBF"}, \code{"Tri-cube"}, \code{"Triangular"}.}
 }
 \value{
 A \code{DxD} matrix giving an estimate of the Hessian at \code{x}.
@@ -38,9 +38,9 @@ w_i = K\left(\frac{\|X_i - x\|}{h}\right)
 }
 where \eqn{K(\cdot)} is the chosen kernel function. Supported kernels include:
 
-- RBF: \eqn{K(r) = \exp\left(-\frac{1}{2} r^2\right)}
+- Epanechnikov (default): \eqn{K(r) = \frac{3}{4}(1 - r^2)_+}
 
-- Epanechnikov: \eqn{K(r) = \frac{3}{4}(1 - r^2)_+}
+- RBF: \eqn{K(r) = \exp\left(-\frac{1}{2} r^2\right)}
 
 - Tri-cube: \eqn{K(r) = (1 - r^3)^3_+}
 

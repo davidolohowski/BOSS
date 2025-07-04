@@ -516,8 +516,8 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 #' @param x A numeric vector of length \code{D} specifying the point at which to estimate Hessian.
 #' @param X A \code{nXD} (\eqn{n \geq {D+2\choose 2}}) matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).
 #' @param y A numeric vector of length \code{n} giving the function evaluation at \code{X}.
-#' @param bw A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.
-#' @param kernel A character string specifying the type of kernel. Should be one of \code{"RBF"} (Default), \code{"Epanech"}, \code{"Tri-cube"}, \code{"Triangular"}.
+#' @param bw A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to \code{1}.
+#' @param kernel A character string specifying the type of kernel. Should be one of \code{"Epanech"} (Default), \code{"RBF"}, \code{"Tri-cube"}, \code{"Triangular"}.
 #'
 #' @return A \code{DxD} matrix giving an estimate of the Hessian at \code{x}.
 #'
@@ -535,9 +535,9 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 #' }
 #' where \eqn{K(\cdot)} is the chosen kernel function. Supported kernels include:
 #'
-#' - RBF: \eqn{K(r) = \exp\left(-\frac{1}{2} r^2\right)}
+#' - Epanechnikov (default): \eqn{K(r) = \frac{3}{4}(1 - r^2)_+}
 #'
-#' - Epanechnikov: \eqn{K(r) = \frac{3}{4}(1 - r^2)_+}
+#' - RBF: \eqn{K(r) = \exp\left(-\frac{1}{2} r^2\right)}
 #'
 #' - Tri-cube: \eqn{K(r) = (1 - r^3)^3_+}
 #'

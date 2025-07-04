@@ -47,7 +47,7 @@ The function numerically computes the hessian at the mode obtained from a \code{
 it first draws a circle with radius \code{local.poly.args$eps/2} around the mode from the \code{boss} object and check how many \code{boss} design points
 are within the circle. If the number is below \eqn{n = (D+2)(D+1)}, additional uniformly distributed design points are added within the circle to reach \eqn{n} and
 evaluate at these additional points with \code{boss_result$objective_function}. Combining all design points in the circle, estimate the Hessian at \code{boss} mode by
-a locally weighted polynomial regression using \code{estimate_hessian()}.
+a locally weighted polynomial regression using \code{estimate_hessian()}. The default kernel \code{bw} argument for \code{estimate_hessian()} is set to \code{local.poly.args$eps / 2*D^0.4}.
 
 2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$objective_function}.
 

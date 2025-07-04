@@ -356,7 +356,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' it first draws a circle with radius \code{local.poly.args$eps/2} around the mode from the \code{boss} object and check how many \code{boss} design points
 #' are within the circle. If the number is below \eqn{n = (D+2)(D+1)}, additional uniformly distributed design points are added within the circle to reach \eqn{n} and
 #' evaluate at these additional points with \code{boss_result$objective_function}. Combining all design points in the circle, estimate the Hessian at \code{boss} mode by
-#' a locally weighted polynomial regression using \code{estimate_hessian()}.
+#' a locally weighted polynomial regression using \code{estimate_hessian()}. The default kernel \code{bw} argument for \code{estimate_hessian()} is set to \code{local.poly.args$eps / 2*D^0.4}.
 #'
 #' 2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$objective_function}.
 #'
@@ -365,7 +365,6 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' Note that \code{local.poly} balances between theoretical accuracy and computational budget. \code{num.obj} is the most computationally intense while \code{num.GP} is the cheapest, but does not have theoretical guarantee.
 #'
 #' @importFrom numDeriv hessian
-#' @importFrom randtoolbox sobol
 #' @export
 update_hessian <- function(boss_result,
                            approach      = 'local.poly',
@@ -431,7 +430,7 @@ update_hessian <- function(boss_result,
       Z <- Z / sqrt(rowSums(Z^2))               # Normalize to unit sphere
 
       # LHS for radius component
-      r <- lhs::randomLHS(required_neighbors, 1)[, 1]^(1 / D)  # Ensure shape is numeric vector
+      r <- runif(required_neighbors)^(1 / D)  # Ensure shape is numeric vector
       X_add <- Z * (local.poly.args$eps / 2 * r)     # Scale by radius
 
       # Shift to center at mode_point
