@@ -15,7 +15,7 @@ using locally-weighted polynomial regression (moving least squares)."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,11 +66,11 @@ using locally-weighted polynomial regression (moving least squares).</p>
 
 
 <dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
-<dd><p>A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from <code>X</code> to <code>x</code>.</p></dd>
+<dd><p>A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to <code>1</code>.</p></dd>
 
 
 <dt id="arg-kernel">kernel<a class="anchor" aria-label="anchor" href="#arg-kernel"></a></dt>
-<dd><p>A character string specifying the type of kernel. Should be one of <code>"RBF"</code> (Default), <code>"Epanech"</code>, <code>"Tri-cube"</code>, <code>"Triangular"</code>.</p></dd>
+<dd><p>A character string specifying the type of kernel. Should be one of <code>"Epanech"</code> (Default), <code>"RBF"</code>, <code>"Tri-cube"</code>, <code>"Triangular"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -90,8 +90,8 @@ $$
 w_i = K\left(\frac{\|X_i - x\|}{h}\right)
 $$
 where \(K(\cdot)\) is the chosen kernel function. Supported kernels include:</p>
+<p>- Epanechnikov (default): \(K(r) = \frac{3}{4}(1 - r^2)_+\)</p>
 <p>- RBF: \(K(r) = \exp\left(-\frac{1}{2} r^2\right)\)</p>
-<p>- Epanechnikov: \(K(r) = \frac{3}{4}(1 - r^2)_+\)</p>
 <p>- Tri-cube: \(K(r) = (1 - r^3)^3_+\)</p>
 <p>- Triangular: \(K(r) = (1 - r)_+\)</p>
 <p>The design matrix \(\Phi\) is built by evaluating all degree-0, 1, and 2 monomials at each centered design point.</p>

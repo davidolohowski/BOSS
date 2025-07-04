@@ -17,7 +17,7 @@ store it back into the boss_result."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,7 +101,7 @@ Must be one of <code>local.poly</code>, <code>num.obj</code>, <code>num.GP</code
 it first draws a circle with radius <code>local.poly.args$eps/2</code> around the mode from the <code>boss</code> object and check how many <code>boss</code> design points
 are within the circle. If the number is below \(n = (D+2)(D+1)\), additional uniformly distributed design points are added within the circle to reach \(n\) and
 evaluate at these additional points with <code>boss_result$objective_function</code>. Combining all design points in the circle, estimate the Hessian at <code>boss</code> mode by
-a locally weighted polynomial regression using <code><a href="estimate_hessian.html">estimate_hessian()</a></code>.</p>
+a locally weighted polynomial regression using <code><a href="estimate_hessian.html">estimate_hessian()</a></code>. The default kernel <code>bw</code> argument for <code><a href="estimate_hessian.html">estimate_hessian()</a></code> is set to <code>local.poly.args$eps / 2*D^0.4</code>.</p>
 <p>2. Brute-force numerical hessian (<code>num.obj</code>): directly estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> using the <code>boss_result$objective_function</code>.</p>
 <p>3. Numerical hessian based on GP surrogate (<code>num.GP</code>): estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> using the <code>boss_result$surrogate</code>.</p>
 <p>Note that <code>local.poly</code> balances between theoretical accuracy and computational budget. <code>num.obj</code> is the most computationally intense while <code>num.GP</code> is the cheapest, but does not have theoretical guarantee.</p>
