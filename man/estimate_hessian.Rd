@@ -4,16 +4,16 @@
 \alias{estimate_hessian}
 \title{Estimate Hessian at a point based on sattered data}
 \usage{
-estimate_hessian(x, X, y, h = NULL, kernel = "RBF")
+estimate_hessian(x, X, y, bw = NULL, kernel = "RBF")
 }
 \arguments{
-\item{x}{A A numeric vector of length \code{D} specifying the point at which to estimate Hessian.}
+\item{x}{A numeric vector of length \code{D} specifying the point at which to estimate Hessian.}
 
-\item{X}{A \code{nXD} matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).}
+\item{X}{A \code{nXD} (\eqn{n \geq {D+2\choose 2}}) matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).}
 
 \item{y}{A numeric vector of length \code{n} giving the function evaluation at \code{X}.}
 
-\item{h}{A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.}
+\item{bw}{A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.}
 
 \item{kernel}{A character string specifying the type of kernel. Should be one of \code{"RBF"} (Default), \code{"Epanech"}, \code{"Tri-cube"}, \code{"Triangular"}.}
 }

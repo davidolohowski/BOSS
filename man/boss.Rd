@@ -34,7 +34,7 @@ The essential support is defined to capture around 1 - \code{alpha} of the poste
 \code{optim.max.iter}, \code{opt.lengthscale.grid}, \code{opt.grid}.}
 
 \item{hess_opts}{List of options for \code{update_hessian()}. Any of
-\code{method}, \code{method.args}, \code{tol}.}
+\code{approach}, \code{local.poly.args}, \code{num.args}, \code{tol}.}
 
 \item{essup_opts}{List of options for the essential‐support stage:
 \code{alpha} to construct the essential support and \code{n_samples}

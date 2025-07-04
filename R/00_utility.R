@@ -513,10 +513,10 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 #' Estimate the Hessian at a given point \code{x} based on its neighboring scattered design points \code{X} and their evaluations \code{y}
 #' using locally-weighted polynomial regression (moving least squares).
 #'
-#' @param x A A numeric vector of length \code{D} specifying the point at which to estimate Hessian.
-#' @param X A \code{nXD} matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).
+#' @param x A numeric vector of length \code{D} specifying the point at which to estimate Hessian.
+#' @param X A \code{nXD} (\eqn{n \geq {D+2\choose 2}}) matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).
 #' @param y A numeric vector of length \code{n} giving the function evaluation at \code{X}.
-#' @param h A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.
+#' @param bw A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from \code{X} to \code{x}.
 #' @param kernel A character string specifying the type of kernel. Should be one of \code{"RBF"} (Default), \code{"Epanech"}, \code{"Tri-cube"}, \code{"Triangular"}.
 #'
 #' @return A \code{DxD} matrix giving an estimate of the Hessian at \code{x}.
@@ -569,33 +569,35 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 #' H_true <- numDeriv::hessian(f, x0)
 #' print(H_true)
 #' @export
-estimate_hessian <- function(x, X, y, h = NULL, kernel = 'RBF') {
+estimate_hessian <- function(x, X, y, bw = NULL, kernel = 'RBF') {
+  X <- as.matrix(X)
+  x <- as.numeric(x)
+  N <- nrow(X)
+  d <- ncol(X)
+
+  if (N < (d+2)*(d+1)/2) {
+    stop(paste0('There must be at least ', (d+2)*(d+1)/2,
+                ' design points in X for estimation to work.'))
+  }
 
   # Center design points around x
   Z <- sweep(X, 2, x)
 
-  if(is.null(h)){
-    h <- mean(sqrt(rowSums(Z^2)))
+  if (is.null(bw)) {
+    bw <- mean(sqrt(rowSums(Z^2)))
   }
 
-  if(! kernel %in% c("RBF", "Epanech", "Tri-cube", "Triangular")){
+  if (! kernel %in% c("RBF", "Epanech", "Tri-cube", "Triangular")) {
     stop('Kernel must be one of "RBF", "Epanech", "Tri-cube", "Triangular"!')
+  } else if (kernel == 'RBF') {
+    kernel <- function(r) exp(-0.5 * r^2)
+  } else if (kernel == 'Epanech') {
+    kernel <- function(r) pmax(0, 3/4 * (1 - r^2))
+  } else if (kernel == 'Tri-cube') {
+    kernel <- function(r) pmax(0, (1 - r^3)^3)
+  } else {
+    kernel <- function(r) pmax(0, 1 - r)
   }
-  else if (kernel == 'RBF'){
-    kernel <- function(r) exp(-0.5*r^2)
-  }
-  else if (kernel == 'Epanech'){
-    kernel <- function(r) pmax(0, 3/4*(1-r^2))
-  }
-  else if(kernel == 'Tri-cube'){
-    kernel <- function(r) pmax(0, (1-r^3)^3)
-  }
-  else{
-    kernel <- function(r) pmax(0, 1-r)
-  }
-
-  N <- nrow(X)
-  d <- ncol(X)
 
   # Generate all monomial multi-indices up to degree 2
   multi_indices <- function(d, deg) {
@@ -616,28 +618,21 @@ estimate_hessian <- function(x, X, y, h = NULL, kernel = 'RBF') {
   Phi <- matrix(0, N, Q)
   for (i in 1:Q) {
     exponents <- basis_idx[i, ]
-    Phi[, i] <- apply(Z^matrix(rep(exponents, each = N), ncol = d), 1, prod)
+    if (d == 1) {
+      Phi[, i] <- Z^exponents  # Z is a vector
+    } else {
+      Phi[, i] <- apply(Z^matrix(rep(exponents, each = N), ncol = d), 1, prod)
+    }
   }
 
   # Kernel weights
-  r <- sqrt(rowSums(Z^2)) / h
+  r <- sqrt(rowSums(Z^2)) / bw
   w <- kernel(r)
   W <- diag(w)
 
   # Normal matrix
   XtWX <- t(Phi) %*% W %*% Phi
   XtWX_inv <- solve(XtWX)
-
-  # All second-order multi-indices (symmetric combinations)
-  deriv_idx <- list()
-  for (i in 1:d) {
-    for (j in i:d) {
-      alpha <- integer(d)
-      alpha[i] <- alpha[i] + 1
-      alpha[j] <- alpha[j] + 1
-      deriv_idx[[length(deriv_idx) + 1]] <- list(alpha = alpha, i = i, j = j)
-    }
-  }
 
   # Function to compute D^alpha phi(0)
   derivative_vector <- function(alpha, basis_idx) {
@@ -654,17 +649,28 @@ estimate_hessian <- function(x, X, y, h = NULL, kernel = 'RBF') {
     })
   }
 
-  # Compute Hessian entries
+  # Compute Hessian
   H <- matrix(0, d, d)
-  for (entry in deriv_idx) {
-    alpha <- entry$alpha
-    i <- entry$i
-    j <- entry$j
-    D_alpha_phi <- derivative_vector(alpha, basis_idx)
-    a_alpha <- W %*% Phi %*% XtWX_inv %*% D_alpha_phi
-    value <- sum(a_alpha * y)
-    H[i, j] <- value
-    H[j, i] <- value  # symmetry
+  for (i in 1:d) {
+    for (j in 1:d) {
+      alpha <- integer(d)
+      alpha[i] <- alpha[i] + 1
+      alpha[j] <- alpha[j] + 1
+      D_alpha_phi <- derivative_vector(alpha, basis_idx)
+      a_alpha <- W %*% Phi %*% XtWX_inv %*% D_alpha_phi
+      H[i, j] <- sum(a_alpha * y)
+    }
+  }
+
+  # Enforce symmetry if d > 1
+  if (d > 1) {
+    for (i in 1:(d - 1)) {
+      for (j in (i + 1):d) {
+        avg <- (H[i, j] + H[j, i]) / 2
+        H[i, j] <- avg
+        H[j, i] <- avg
+      }
+    }
   }
 
   return(H)

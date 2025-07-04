@@ -6,8 +6,9 @@
 \usage{
 update_hessian(
   boss_result,
-  method = "Richardson",
-  method.args = list(),
+  approach = "local.poly",
+  local.poly.args = list(eps = 0.1, bw = NULL, kernel = "RBF"),
+  num.args = list(method = "Richardson", method.args = list()),
   tol = 1e-08,
   ...
 )
@@ -16,14 +17,16 @@ update_hessian(
 \item{boss_result}{A S3 \code{boss} object returned by \code{BOSS_modal()}, which must
 contain \code{design_points$x_original} and \code{objective_function}.}
 
-\item{method}{Character string specifying the finite-difference method
-passed to \code{numDeriv::hessian} (default \code{"Richardson"}).}
+\item{approach}{Character string specifying the method used for estimating the Hessian at the BO mode.
+Must be one of \code{local.poly}, \code{num.obj}, \code{num.GP}.}
 
-\item{method.args}{List of additional arguments for the chosen method.}
+\item{local.poly.args}{List of additional arguments for the \code{local.poly} method.}
+
+\item{num.args}{List of additional arguments for either \code{num.obj} or \code{num.GP} method.}
 
 \item{tol}{Numeric tolerance for eigenvalues (default \code{1e-8}).}
 
-\item{...}{Further arguments passed to \code{numDeriv::hessian}.}
+\item{...}{Further arguments passed to \code{num.obj} or \code{num.GP} which will be further passed to \code{numDeriv::hessian}.}
 }
 \value{
 The input \code{boss_result} with two new components:
@@ -36,4 +39,19 @@ The input \code{boss_result} with two new components:
 Compute the numerical Hessian of the objective at the current best point
 (in original input space), verify it is negative semi-definite (NSD), and
 store it back into the \code{boss_result}.
+}
+\details{
+The function numerically computes the hessian at the mode obtained from a \code{boss} Object using three different strategies:
+
+1. Default: Locally weighted polynomial regression (\code{local.poly}): given a specified accuracy level (default: \code{local.poly.args$eps = 0.1}),
+it first draws a circle with radius \code{local.poly.args$eps/2} around the mode from the \code{boss} object and check how many \code{boss} design points
+are within the circle. If the number is below \eqn{n = (D+2)(D+1)}, additional uniformly distributed design points are added within the circle to reach \eqn{n} and
+evaluate at these additional points with \code{boss_result$objective_function}. Combining all design points in the circle, estimate the Hessian at \code{boss} mode by
+a locally weighted polynomial regression using \code{estimate_hessian()}.
+
+2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$objective_function}.
+
+3. Numerical hessian based on GP surrogate (\code{num.GP}): estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$surrogate}.
+
+Note that \code{local.poly} balances between theoretical accuracy and computational budget. \code{num.obj} is the most computationally intense while \code{num.GP} is the cheapest, but does not have theoretical guarantee.
 }

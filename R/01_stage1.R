@@ -336,22 +336,40 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #'
 #' @param boss_result A S3 \code{boss} object returned by \code{BOSS_modal()}, which must
 #'   contain \code{design_points$x_original} and \code{objective_function}.
-#' @param method Character string specifying the finite-difference method
-#'   passed to \code{numDeriv::hessian} (default \code{"Richardson"}).
-#' @param method.args List of additional arguments for the chosen method.
+#' @param approach Character string specifying the method used for estimating the Hessian at the BO mode.
+#' Must be one of \code{local.poly}, \code{num.obj}, \code{num.GP}.
+#' @param local.poly.args List of additional arguments for the \code{local.poly} method.
+#' @param num.args List of additional arguments for either \code{num.obj} or \code{num.GP} method.
 #' @param tol Numeric tolerance for eigenvalues (default \code{1e-8}).
-#' @param ... Further arguments passed to \code{numDeriv::hessian}.
+#' @param ... Further arguments passed to \code{num.obj} or \code{num.GP} which will be further passed to \code{numDeriv::hessian}.
 #'
 #' @return The input \code{boss_result} with two new components:
 #'   \itemize{
 #'     \item \code{mode_hessian}: symmetric Hessian matrix at the mode.
 #'     \item \code{mode}: the mode point in original input space.
 #'   }
+#'
+#' @details
+#' The function numerically computes the hessian at the mode obtained from a \code{boss} Object using three different strategies:
+#'
+#' 1. Default: Locally weighted polynomial regression (\code{local.poly}): given a specified accuracy level (default: \code{local.poly.args$eps = 0.1}),
+#' it first draws a circle with radius \code{local.poly.args$eps/2} around the mode from the \code{boss} object and check how many \code{boss} design points
+#' are within the circle. If the number is below \eqn{n = (D+2)(D+1)}, additional uniformly distributed design points are added within the circle to reach \eqn{n} and
+#' evaluate at these additional points with \code{boss_result$objective_function}. Combining all design points in the circle, estimate the Hessian at \code{boss} mode by
+#' a locally weighted polynomial regression using \code{estimate_hessian()}.
+#'
+#' 2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$objective_function}.
+#'
+#' 3. Numerical hessian based on GP surrogate (\code{num.GP}): estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$surrogate}.
+#'
+#' Note that \code{local.poly} balances between theoretical accuracy and computational budget. \code{num.obj} is the most computationally intense while \code{num.GP} is the cheapest, but does not have theoretical guarantee.
+#'
 #' @importFrom numDeriv hessian
 #' @export
 update_hessian <- function(boss_result,
-                           method      = "Richardson",
-                           method.args = list(),
+                           approach      = 'local.poly',
+                           local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'RBF'),
+                           num.args = list(method = 'Richardson', method.args = list()),
                            tol         = 1e-8,
                            ...) {
   # extract original (unscaled) design matrix and responses
@@ -360,18 +378,65 @@ update_hessian <- function(boss_result,
   D         <- ncol(xmat_orig)
 
   # locate current optimizer in original space
-  mode_point <- xmat_orig[which.max(yvec), , drop = TRUE]
+  mode_point <- xmat_orig[which.max(yvec), , drop = FALSE]
 
-  # compute Hessian via numDeriv
-  H <- numDeriv::hessian(
-    func        = boss_result$objective_function,
-    x           = mode_point,
-    method      = method,
-    method.args = method.args,
-    ...
-  )
-  # symmetrize
-  H <- (H + t(H)) / 2
+  if(!approach %in% c('local.poly', 'num.obj', 'num.GP')){
+    stop("Hessian estimation approach must be one of 'local.poly', 'num.obj', 'num.GP'.")
+  }
+  else if(approach == 'num.obj'){
+    # compute Hessian via numDeriv based on objective function
+    H <- numDeriv::hessian(
+      func        = boss_result$objective_function,
+      x           = mode_point,
+      method      = num.args$method,
+      method.args = num.args$method.args,
+      ...
+    )
+    # symmetrize
+    H <- (H + t(H)) / 2
+  }
+  else if(approach == 'num.GP'){
+    # compute Hessian via numDeriv based on GP surrogate
+    H <- numDeriv::hessian(
+      func        = boss_result$surrogate,
+      x           = mode_point,
+      method      = num.args$method,
+      method.args = num.args$method.args,
+      ...
+    )
+    # symmetrize
+    H <- (H + t(H)) / 2
+  }
+  else{
+    # compute Hessian via locally weighted polynomial regression
+    required_neighbors <- (D+2)*(D+1)
+
+    dist <- sqrt(rowSums(sweep(xmat_orig, 2, mode_point)^2))
+    nn_idx <- dist < local.poly.args$eps/2
+    xmat_neighbor <- xmat_orig[nn_idx, , drop = FALSE]
+    y_neighbor <- yvec[nn_idx]
+
+    if(sum(nn_idx) < required_neighbors){
+      n_needed <- required_neighbors - sum(nn_idx)
+      X_add <- matrix(rnorm(n_needed * D), ncol = D)
+      X_add <- X_add / sqrt(rowSums(X_add^2))
+      U <- runif(n_needed)^(1/D)
+      X_add <- matrix(X_add * (local.poly.args$eps/2 * U), ncol = D)
+      X_add <- sweep(X_add, 2, mode_point, FUN = '+')
+
+      y_add <- apply(X_add, 1, boss_result$objective_function)
+
+      X_local <- rbind(xmat_neighbor, X_add)
+      y_local <- c(y_neighbor, y_add)
+    }
+    else{
+      X_local <- xmat_neighbor
+      y_local <- y_neighbor
+    }
+    H <- estimate_hessian(mode_point, X_local, y_local,
+                          bw = local.poly.args$bw,
+                          kernel = local.poly.args$kernel)
+  }
 
   # check negative semi-definiteness: all eigenvalues <= tol
   ev <- eigen(H, symmetric = TRUE, only.values = TRUE)$values
@@ -383,7 +448,7 @@ update_hessian <- function(boss_result,
   }
 
   boss_result$mode_hessian <- H
-  boss_result$mode         <- mode_point
+  boss_result$mode         <- mode_point[ , , drop = TRUE]
   return(boss_result)
 }
 

@@ -22,7 +22,7 @@
 #'   \code{initial_design}, \code{delta}, \code{optim.n},
 #'   \code{optim.max.iter}, \code{opt.lengthscale.grid}, \code{opt.grid}.
 #' @param hess_opts List of options for \code{update_hessian()}. Any of
-#'   \code{method}, \code{method.args}, \code{tol}.
+#'   \code{approach}, \code{local.poly.args}, \code{num.args}, \code{tol}.
 #' @param essup_opts List of options for the essential‐support stage:
 #'   \code{alpha} to construct the essential support and \code{n_samples}
 #'   for \code{compute_fill_in()}.
@@ -63,8 +63,9 @@ boss <- function(func,
     opt.grid            = NULL
   )
   default_hess  <- list(
-    method      = "Richardson",
-    method.args = list(),
+    approach      = 'local.poly',
+    local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'RBF'),
+    num.args = list(method = 'Richardson', method.args = list()),
     tol         = 1e-8
   )
   default_essup <- list(
