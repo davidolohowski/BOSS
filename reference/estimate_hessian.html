@@ -15,7 +15,7 @@ using locally-weighted polynomial regression (moving least squares)."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,7 @@ using locally-weighted polynomial regression (moving least squares).</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">estimate_hessian</span><span class="op">(</span><span class="va">x</span>, <span class="va">X</span>, <span class="va">y</span>, h <span class="op">=</span> <span class="cn">NULL</span>, kernel <span class="op">=</span> <span class="st">"RBF"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">estimate_hessian</span><span class="op">(</span><span class="va">x</span>, <span class="va">X</span>, <span class="va">y</span>, bw <span class="op">=</span> <span class="cn">NULL</span>, kernel <span class="op">=</span> <span class="st">"RBF"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -54,18 +54,18 @@ using locally-weighted polynomial regression (moving least squares).</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A A numeric vector of length <code>D</code> specifying the point at which to estimate Hessian.</p></dd>
+<dd><p>A numeric vector of length <code>D</code> specifying the point at which to estimate Hessian.</p></dd>
 
 
 <dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A <code>nXD</code> matrix giving the locations of the neighboring points around <code>x</code> (It can contain <code>x</code>).</p></dd>
+<dd><p>A <code>nXD</code> (\(n \geq {D+2\choose 2}\)) matrix giving the locations of the neighboring points around <code>x</code> (It can contain <code>x</code>).</p></dd>
 
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
 <dd><p>A numeric vector of length <code>n</code> giving the function evaluation at <code>X</code>.</p></dd>
 
 
-<dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
+<dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p>A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to the average distance from <code>X</code> to <code>x</code>.</p></dd>
 
 

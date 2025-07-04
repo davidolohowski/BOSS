@@ -17,7 +17,7 @@ store it back into the boss_result."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,8 +51,9 @@ store it back into the <code>boss_result</code>.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">update_hessian</span><span class="op">(</span></span>
 <span>  <span class="va">boss_result</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"Richardson"</span>,</span>
-<span>  method.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"local.poly"</span>,</span>
+<span>  local.poly.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eps <span class="op">=</span> <span class="fl">0.1</span>, bw <span class="op">=</span> <span class="cn">NULL</span>, kernel <span class="op">=</span> <span class="st">"RBF"</span><span class="op">)</span>,</span>
+<span>  num.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"Richardson"</span>, method.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -67,13 +68,17 @@ store it back into the <code>boss_result</code>.</p>
 contain <code>design_points$x_original</code> and <code>objective_function</code>.</p></dd>
 
 
-<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Character string specifying the finite-difference method
-passed to <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> (default <code>"Richardson"</code>).</p></dd>
+<dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
+<dd><p>Character string specifying the method used for estimating the Hessian at the BO mode.
+Must be one of <code>local.poly</code>, <code>num.obj</code>, <code>num.GP</code>.</p></dd>
 
 
-<dt id="arg-method-args">method.args<a class="anchor" aria-label="anchor" href="#arg-method-args"></a></dt>
-<dd><p>List of additional arguments for the chosen method.</p></dd>
+<dt id="arg-local-poly-args">local.poly.args<a class="anchor" aria-label="anchor" href="#arg-local-poly-args"></a></dt>
+<dd><p>List of additional arguments for the <code>local.poly</code> method.</p></dd>
+
+
+<dt id="arg-num-args">num.args<a class="anchor" aria-label="anchor" href="#arg-num-args"></a></dt>
+<dd><p>List of additional arguments for either <code>num.obj</code> or <code>num.GP</code> method.</p></dd>
 
 
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
@@ -81,7 +86,7 @@ passed to <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="e
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Further arguments passed to <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code>.</p></dd>
+<dd><p>Further arguments passed to <code>num.obj</code> or <code>num.GP</code> which will be further passed to <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -89,6 +94,18 @@ passed to <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="e
     <p>The input <code>boss_result</code> with two new components:</p><ul><li><p><code>mode_hessian</code>: symmetric Hessian matrix at the mode.</p></li>
 <li><p><code>mode</code>: the mode point in original input space.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The function numerically computes the hessian at the mode obtained from a <code>boss</code> Object using three different strategies:</p>
+<p>1. Default: Locally weighted polynomial regression (<code>local.poly</code>): given a specified accuracy level (default: <code>local.poly.args$eps = 0.1</code>),
+it first draws a circle with radius <code>local.poly.args$eps/2</code> around the mode from the <code>boss</code> object and check how many <code>boss</code> design points
+are within the circle. If the number is below \(n = (D+2)(D+1)\), additional uniformly distributed design points are added within the circle to reach \(n\) and
+evaluate at these additional points with <code>boss_result$objective_function</code>. Combining all design points in the circle, estimate the Hessian at <code>boss</code> mode by
+a locally weighted polynomial regression using <code><a href="estimate_hessian.html">estimate_hessian()</a></code>.</p>
+<p>2. Brute-force numerical hessian (<code>num.obj</code>): directly estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> using the <code>boss_result$objective_function</code>.</p>
+<p>3. Numerical hessian based on GP surrogate (<code>num.GP</code>): estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> using the <code>boss_result$surrogate</code>.</p>
+<p>Note that <code>local.poly</code> balances between theoretical accuracy and computational budget. <code>num.obj</code> is the most computationally intense while <code>num.GP</code> is the cheapest, but does not have theoretical guarantee.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
