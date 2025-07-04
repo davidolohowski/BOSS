@@ -369,11 +369,12 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' \deqn{\epsilon = \frac{1}{4\sqrt{\text{Tr}(-H_{GP})}},}
 #' where \eqn{H_{GP}} is the hessian at the \code{boss} mode computed from \code{numDeriv::hessian()} on the GP surrogate \code{boss_result$surrogate}.
 #'
-#' 2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$objective_function}.
+#' 2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian()} using the \code{boss_result$objective_function}.
 #'
-#' 3. Numerical hessian based on GP surrogate (\code{num.GP}): estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$surrogate}.
+#' 3. Numerical hessian based on GP surrogate (\code{num.GP}): estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian()} using the \code{boss_result$surrogate}.
 #'
 #' Note that \code{local.poly} balances between theoretical accuracy and computational budget. \code{num.obj} is the most computationally intense while \code{num.GP} is the cheapest, but does not have theoretical guarantee.
+#' In addition, if there is noise in the evaluation of \code{boss_result$objective_function}, we recommend users to use \code{local.poly} or \code{num.GP}. Otherwise, \code{numDeriv::hessian()} based on \code{boss_result$objective_function} will be highly unstable.
 #'
 #' @importFrom numDeriv hessian
 #' @importFrom lhs randomLHS

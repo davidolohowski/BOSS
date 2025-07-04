@@ -17,7 +17,7 @@ store it back into the boss_result."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.25</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.26</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,9 +106,10 @@ If <code>local.poly.args$eps = NULL</code>,
 it is obtained by
 $$\epsilon = \frac{1}{4\sqrt{\text{Tr}(-H_{GP})}},$$
 where \(H_{GP}\) is the hessian at the <code>boss</code> mode computed from <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian()</a></code> on the GP surrogate <code>boss_result$surrogate</code>.</p>
-<p>2. Brute-force numerical hessian (<code>num.obj</code>): directly estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> using the <code>boss_result$objective_function</code>.</p>
-<p>3. Numerical hessian based on GP surrogate (<code>num.GP</code>): estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian</a></code> using the <code>boss_result$surrogate</code>.</p>
-<p>Note that <code>local.poly</code> balances between theoretical accuracy and computational budget. <code>num.obj</code> is the most computationally intense while <code>num.GP</code> is the cheapest, but does not have theoretical guarantee.</p>
+<p>2. Brute-force numerical hessian (<code>num.obj</code>): directly estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian()</a></code> using the <code>boss_result$objective_function</code>.</p>
+<p>3. Numerical hessian based on GP surrogate (<code>num.GP</code>): estimate the hessian at the <code>boss</code> mode via <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian()</a></code> using the <code>boss_result$surrogate</code>.</p>
+<p>Note that <code>local.poly</code> balances between theoretical accuracy and computational budget. <code>num.obj</code> is the most computationally intense while <code>num.GP</code> is the cheapest, but does not have theoretical guarantee.
+In addition, if there is noise in the evaluation of <code>boss_result$objective_function</code>, we recommend users to use <code>local.poly</code> or <code>num.GP</code>. Otherwise, <code><a href="https://rdrr.io/pkg/numDeriv/man/hessian.html" class="external-link">numDeriv::hessian()</a></code> based on <code>boss_result$objective_function</code> will be highly unstable.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
