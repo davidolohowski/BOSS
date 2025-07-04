@@ -352,11 +352,15 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' @details
 #' The function numerically computes the hessian at the mode obtained from a \code{boss} Object using three different strategies:
 #'
-#' 1. Default: Locally weighted polynomial regression (\code{local.poly}): given a specified accuracy level (default: \code{local.poly.args$eps = 0.1}),
-#' it first draws a circle with radius \code{local.poly.args$eps/2} around the mode from the \code{boss} object and check how many \code{boss} design points
+#' 1. Default: Locally weighted polynomial regression (\code{local.poly}): given a specified accuracy level \code{local.poly.args$eps}.
+#' The function then first draws a circle with radius \code{local.poly.args$eps/2} around the mode from the \code{boss} object and check how many \code{boss} design points
 #' are within the circle. If the number is below \eqn{n = (D+2)(D+1)}, additional uniformly distributed design points are added within the circle to reach \eqn{n} and
 #' evaluate at these additional points with \code{boss_result$objective_function}. Combining all design points in the circle, estimate the Hessian at \code{boss} mode by
 #' a locally weighted polynomial regression using \code{estimate_hessian()}. The default kernel \code{bw} argument for \code{estimate_hessian()} is set to \code{local.poly.args$eps / 2*D^0.4}.
+#' If \code{local.poly.args$eps = NULL},
+#' it is obtained by
+#' \deqn{\epsilon = \frac{1}{4\sqrt{\text{Tr}(-H_{GP})}},}
+#' where \eqn{H_{GP}} is the hessian at the \code{boss} mode computed from \code{numDeriv::hessian()} on the GP surrogate \code{boss_result$surrogate}.
 #'
 #' 2. Brute-force numerical hessian (\code{num.obj}): directly estimate the hessian at the \code{boss} mode via \code{numDeriv::hessian} using the \code{boss_result$objective_function}.
 #'
@@ -369,7 +373,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' @export
 update_hessian <- function(boss_result,
                            approach      = 'local.poly',
-                           local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'Epanech'),
+                           local.poly.args = list(eps = NULL, bw = NULL, kernel = 'Epanech'),
                            num.args = list(method = 'Richardson', method.args = list()),
                            tol         = 1e-8,
                            ...) {
@@ -410,17 +414,32 @@ update_hessian <- function(boss_result,
   }
   else{
     # compute Hessian via locally weighted polynomial regression
+    eps <- local.poly.args$eps
+
+    if(is.null(eps)){
+
+      H_crude <- numDeriv::hessian(
+        func        = boss_result$surrogate,
+        x           = mode_point,
+        method      = num.args$method,
+        method.args = num.args$method.args,
+        ...
+      )
+
+      eps <- 0.25/sqrt((sum(diag(abs(H_crude)))))
+    }
+
     if(is.null(local.poly.args$bw)){
       bw <- D^0.4
     }
     else{
-      bw <- local.poly.args$bw/ (local.poly.args$eps/2)
+      bw <- local.poly.args$bw/ (eps/2)
     }
 
     required_neighbors <- (D+2)*(D+1)
 
     dist <- sqrt(rowSums(sweep(xmat_orig, 2, mode_point)^2))
-    nn_idx <- dist < local.poly.args$eps/2
+    nn_idx <- dist < eps/2
     xmat_neighbor <- xmat_orig[nn_idx, , drop = FALSE]
     y_neighbor <- yvec[nn_idx]
 
@@ -432,7 +451,7 @@ update_hessian <- function(boss_result,
 
       # LHS for radius component
       r <- lhs::randomLHS(required_neighbors, 1)[,1]^(1 / D)  # Ensure shape is numeric vector
-      X_add <- Z * (local.poly.args$eps / 2 * r)     # Scale by radius
+      X_add <- Z * (eps / 2 * r)     # Scale by radius
 
       # Shift to center at mode_point
       X_add <- sweep(X_add, 2, mode_point, FUN = "+")
@@ -462,11 +481,11 @@ update_hessian <- function(boss_result,
     # === Scale X_local to lie in unit ball centered at 0 for numerical stability ===
     # Center at mode_point
     X_local_s <- sweep(X_local, 2, mode_point, FUN = "-")
-    X_local_s <- X_local_s / (local.poly.args$eps / 2)
+    X_local_s <- X_local_s / (eps / 2)
 
     H <- estimate_hessian(mode_point, X_local_s, y_local,
                           bw = bw,
-                          kernel = local.poly.args$kernel)/(local.poly.args$eps / 2)^2
+                          kernel = local.poly.args$kernel)/(eps / 2)^2
   }
 
   # check negative semi-definiteness: all eigenvalues <= tol
