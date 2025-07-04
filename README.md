@@ -47,12 +47,12 @@ br2 <- boss(f1d, D = 1,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.99 seconds.
+#> Total time taken: 1.77 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
 #> fill in: added 18 point(s).
-#> Final update completed in  0.01  seconds.
+#> Final update completed in  0.02  seconds.
 plot(br2)
 ```
 
@@ -70,13 +70,13 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.84 seconds.
+#> Total time taken: 1.09 seconds.
 br <- update_hessian(br)
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
 br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
-#> fill in: added 17 point(s).
+#> fill in: added 18 point(s).
 br_update <- update_boss(br)
 plot(br_update)
 ```
@@ -86,23 +86,20 @@ plot(br_update)
 ## 2-D Example
 
 Test the BOSS algorithm on a 2-D Gaussian density. The objective
-function here is the log-density of a standard bivariate Gaussian random
-variable.
+function here is the log-density of a randomly generated bivariate
+Gaussian random variable.
 
 ``` r
-f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), log = T)
-```
+rho <- runif(1, min = -0.9, 0.9)
+f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), sigma = matrix(c(1,rho, rho, 1), 2, 2), log = T)
 
-Run BOSS:
-
-``` r
 # A automatic implementation
 br3 <- boss(f2d, D = 2, 
             modal_opts = list(lower = -c(3,3), upper = c(3,3)),
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.94 seconds.
+#> Total time taken: 2.6 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
@@ -111,13 +108,13 @@ br3 <- boss(f2d, D = 2,
 #> achieved.
 #> fill in: added 100 point(s).
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
-#> Updated fill-in distance is (0.480979) > target h (0.100000); Adjust your
+#> Updated fill-in distance is (0.425632) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.12  seconds.
+#> Final update completed in  0.09  seconds.
 plot(br3)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-exmple2d-1.png" width="100%" />
 
 Similarly, users can also have more modular control over the procedure:
 
@@ -130,7 +127,7 @@ br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.7 seconds.
+#> Total time taken: 3.56 seconds.
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -140,12 +137,12 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Number of points to be added
 #> is greater than max_add. Required h may not be achieved.
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Updated fill-in distance is
-#> (0.486990) > target h (0.100000); Adjust your expectation by either increasing
+#> (0.418671) > target h (0.100000); Adjust your expectation by either increasing
 #> max_add and n_sample_max or increasing h.
 plot(br3)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 ``` r
 

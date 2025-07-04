@@ -365,10 +365,11 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' Note that \code{local.poly} balances between theoretical accuracy and computational budget. \code{num.obj} is the most computationally intense while \code{num.GP} is the cheapest, but does not have theoretical guarantee.
 #'
 #' @importFrom numDeriv hessian
+#' @importFrom randtoolbox sobol
 #' @export
 update_hessian <- function(boss_result,
                            approach      = 'local.poly',
-                           local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'RBF'),
+                           local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'Epanech'),
                            num.args = list(method = 'Richardson', method.args = list()),
                            tol         = 1e-8,
                            ...) {
@@ -409,6 +410,13 @@ update_hessian <- function(boss_result,
   }
   else{
     # compute Hessian via locally weighted polynomial regression
+    if(is.null(local.poly.args$bw)){
+      bw <- local.poly.args$eps / 2*D^0.4
+    }
+    else{
+      bw <- local.poly.args$bw
+    }
+
     required_neighbors <- (D+2)*(D+1)
 
     dist <- sqrt(rowSums(sweep(xmat_orig, 2, mode_point)^2))
@@ -417,15 +425,32 @@ update_hessian <- function(boss_result,
     y_neighbor <- yvec[nn_idx]
 
     if(sum(nn_idx) < required_neighbors){
-      n_needed <- required_neighbors - sum(nn_idx)
-      X_add <- matrix(rnorm(n_needed * D), ncol = D)
-      X_add <- X_add / sqrt(rowSums(X_add^2))
-      U <- runif(n_needed)^(1/D)
-      X_add <- matrix(X_add * (local.poly.args$eps/2 * U), ncol = D)
-      X_add <- sweep(X_add, 2, mode_point, FUN = '+')
 
+      U_dir <- matrix(runif(required_neighbors*D), ncol = D)
+      Z <- qnorm(U_dir)                          # Map to N(0,1)
+      Z <- Z / sqrt(rowSums(Z^2))               # Normalize to unit sphere
+
+      # LHS for radius component
+      r <- lhs::randomLHS(required_neighbors, 1)[, 1]^(1 / D)  # Ensure shape is numeric vector
+      X_add <- Z * (local.poly.args$eps / 2 * r)     # Scale by radius
+
+      # Shift to center at mode_point
+      X_add <- sweep(X_add, 2, mode_point, FUN = "+")
+
+      dists <- apply(X_add, 1, function(xa) {
+        min(sqrt(rowSums((t(t(xmat_orig) - xa))^2)))
+      })
+
+      # Get indices of the n closest points to any xmat_original point
+      remove_idx <- order(dists)[1:sum(nn_idx)]
+
+      # Remove them
+      X_add[-remove_idx, , drop = FALSE]
+
+      # Evaluate objective function at new points
       y_add <- apply(X_add, 1, boss_result$objective_function)
 
+      # Combine neighbors and new LHS-sampled points
       X_local <- rbind(xmat_neighbor, X_add)
       y_local <- c(y_neighbor, y_add)
     }
@@ -434,7 +459,7 @@ update_hessian <- function(boss_result,
       y_local <- y_neighbor
     }
     H <- estimate_hessian(mode_point, X_local, y_local,
-                          bw = local.poly.args$bw,
+                          bw = bw,
                           kernel = local.poly.args$kernel)
   }
 

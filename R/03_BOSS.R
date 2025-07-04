@@ -64,7 +64,7 @@ boss <- function(func,
   )
   default_hess  <- list(
     approach      = 'local.poly',
-    local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'RBF'),
+    local.poly.args = list(eps = 0.1, bw = NULL, kernel = 'Epanech'),
     num.args = list(method = 'Richardson', method.args = list()),
     tol         = 1e-8
   )

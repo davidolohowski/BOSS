@@ -569,7 +569,7 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 #' H_true <- numDeriv::hessian(f, x0)
 #' print(H_true)
 #' @export
-estimate_hessian <- function(x, X, y, bw = NULL, kernel = 'RBF') {
+estimate_hessian <- function(x, X, y, bw = 1, kernel = 'Epanech') {
   X <- as.matrix(X)
   x <- as.numeric(x)
   N <- nrow(X)
@@ -582,10 +582,6 @@ estimate_hessian <- function(x, X, y, bw = NULL, kernel = 'RBF') {
 
   # Center design points around x
   Z <- sweep(X, 2, x)
-
-  if (is.null(bw)) {
-    bw <- mean(sqrt(rowSums(Z^2)))
-  }
 
   if (! kernel %in% c("RBF", "Epanech", "Tri-cube", "Triangular")) {
     stop('Kernel must be one of "RBF", "Epanech", "Tri-cube", "Triangular"!')

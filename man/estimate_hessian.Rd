@@ -4,7 +4,7 @@
 \alias{estimate_hessian}
 \title{Estimate Hessian at a point based on sattered data}
 \usage{
-estimate_hessian(x, X, y, bw = NULL, kernel = "RBF")
+estimate_hessian(x, X, y, bw = 1, kernel = "Epanech")
 }
 \arguments{
 \item{x}{A numeric vector of length \code{D} specifying the point at which to estimate Hessian.}

@@ -7,7 +7,7 @@
 update_hessian(
   boss_result,
   approach = "local.poly",
-  local.poly.args = list(eps = 0.1, bw = NULL, kernel = "RBF"),
+  local.poly.args = list(eps = 0.1, bw = NULL, kernel = "Epanech"),
   num.args = list(method = "Richardson", method.args = list()),
   tol = 1e-08,
   ...
