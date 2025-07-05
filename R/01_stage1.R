@@ -121,6 +121,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
     length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
     like_vec <- sapply(length_scale_vec, function(l)
       compute_like(length_scale = l, y = yvec, x = xmat_trans,
+                   quad = quad, D = D,
                    signal_var = signal_var, noise_var = noise_var))
     max_idx <- which.max(like_vec)
     length_scale <- length_scale_vec[max_idx]
@@ -128,6 +129,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
   } else {
     opt <- optim(runif(1, 0.01, 0.99), function(l)
       compute_like(length_scale = l, y = yvec, x = xmat_trans,
+                   quad = quad, D = D,
                    signal_var = signal_var, noise_var = noise_var),
       control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
     length_scale <- opt$par
@@ -166,6 +168,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
         length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
         like_vec <- sapply(length_scale_vec, function(l)
           -compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                       quad = quad, D = D,
                         signal_var = signal_var, noise_var = noise_var))
         max_idx <- which.max(like_vec)
         length_scale <- length_scale_vec[max_idx]
@@ -173,6 +176,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
       } else {
         opt <- optim(runif(1, 0.01, 0.99), function(l)
           compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                       quad = quad, D = D,
                        signal_var = signal_var, noise_var = noise_var),
           control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
         length_scale <- opt$par

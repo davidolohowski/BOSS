@@ -84,8 +84,9 @@ cov_generator <- function(length_scale = 1, signal_var = 1, nu = Inf) {
     if (is.vector(x))       x       <- matrix(x,       ncol = 1)
     if (is.vector(x_prime)) x_prime <- matrix(x_prime, ncol = 1)
     if (ncol(x) != ncol(x_prime))
-      stop("x and x_prime must have same number of columns")
-
+      # print the dimensions of x and x_prime
+      stop(paste0("x and x_prime must have same number of columns",
+                  " but got ", ncol(x), " and ", ncol(x_prime)))
     d <- ncol(x)
     # build a length-scale vector
     if (length(length_scale) == 1) {
@@ -259,10 +260,15 @@ predict_gp <- function(data,
     L <- chol(K_obs_obs)
 
     # Design matrices: intercept + linear + unique quadratic terms
-    X_covariate <- cbind(1, x_obs,
-                         t(apply(x_obs, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
-    X_star <- cbind(1, x_pred,
-                    t(apply(x_pred, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+    if(D == 1){
+      X_covariate <- cbind(1, x_obs, x_obs^2)
+      X_star <- cbind(1, x_pred, x_pred^2)
+    }else{
+      X_covariate <- cbind(1, x_obs,
+                           t(apply(x_obs, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+      X_star <- cbind(1, x_pred,
+                      t(apply(x_pred, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+    }
 
     # Estimate beta via GLS
     LXs <- forwardsolve(t(L), X_covariate)
@@ -464,11 +470,20 @@ compute_like <- function(length_scale, x, y,
 
   } else {
     # design matrix with intercept, linear, and unique quadratic terms
-    X_covariate <- cbind(
-      rep(1, nrow(x)),
-      x,
-      t(apply(x, 1, function(y) ((y %*% t(y))[upper.tri(diag(ncol(x)), diag = TRUE)])))
-    )
+    if(D == 1){
+      X_covariate <- cbind(
+        rep(1, nrow(x)),
+        x,
+        x^2
+      )
+    }else{
+      X_covariate <- cbind(
+        rep(1, nrow(x)),
+        x,
+        t(apply(x, 1, function(y) ((y %*% t(y))[upper.tri(diag(ncol(x)), diag = TRUE)])))
+      )
+    }
+
 
     choice_cov <- cov_generator(length_scale = length_scale,
                                 signal_var   = signal_var,
@@ -533,7 +548,7 @@ compute_like <- function(length_scale, x, y,
 #'
 #' @export
 UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
-  fnew <- predict_gp(data, x, choice_cov = cov, noise_var = nv, quad = quad)
+  fnew <- predict_gp(data = data, x_pred = x, choice_cov = cov, noise_var = nv, quad = quad)
 
   # Compute the UCB acquisition function
   beta <- 2*log((D^2)*(pi^2)/(6*d))
