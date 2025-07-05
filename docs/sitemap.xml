@@ -17,9 +17,11 @@
 <url><loc>https://davidolohowski.github.io/BOSS/reference/index.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/plot.boss.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/predict_gp.html</loc></url>
+<url><loc>https://davidolohowski.github.io/BOSS/reference/predict_gp_internal.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/print.boss.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/summary.boss.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/update_boss.html</loc></url>
+<url><loc>https://davidolohowski.github.io/BOSS/reference/update_boss_faster.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/update_hessian.html</loc></url>
 </urlset>
 

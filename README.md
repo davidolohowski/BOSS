@@ -47,12 +47,12 @@ br2 <- boss(f1d, D = 1,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.35 seconds.
+#> Total time taken: 1.68 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
-#> fill in: added 21 point(s).
-#> Final update completed in  0.02  seconds.
+#> fill in: added 18 point(s).
+#> Final update completed in  0.01  seconds.
 plot(br2)
 ```
 
@@ -70,13 +70,13 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.12 seconds.
+#> Total time taken: 0.82 seconds.
 br <- update_hessian(br)
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
 br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
-#> fill in: added 19 point(s).
+#> fill in: added 17 point(s).
 br_update <- update_boss(br)
 plot(br_update)
 ```
@@ -99,7 +99,7 @@ br3 <- boss(f2d, D = 2,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 2.57 seconds.
+#> Total time taken: 1.88 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0.01  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
@@ -108,9 +108,9 @@ br3 <- boss(f2d, D = 2,
 #> achieved.
 #> fill in: added 100 point(s).
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
-#> Updated fill-in distance is (0.533956) > target h (0.100000); Adjust your
+#> Updated fill-in distance is (0.467506) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.07  seconds.
+#> Final update completed in  0.09  seconds.
 plot(br3)
 ```
 
@@ -127,7 +127,7 @@ br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 2.22 seconds.
+#> Total time taken: 2.47 seconds.
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -137,7 +137,7 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Number of points to be added
 #> is greater than max_add. Required h may not be achieved.
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Updated fill-in distance is
-#> (0.484991) > target h (0.100000); Adjust your expectation by either increasing
+#> (0.440402) > target h (0.100000); Adjust your expectation by either increasing
 #> max_add and n_sample_max or increasing h.
 plot(br3)
 ```
@@ -147,4 +147,50 @@ plot(br3)
 ``` r
 
 br3_update <- update_boss(br3)
+```
+
+## More efficient surrogate
+
+By default, the current functions `update_boss` and `boss_modal`
+construct the `surrogate` function using the function `predict_gp`,
+which implies that each evaluation of the surrogate function requires a
+full matrix inversion of the covariance matrix. This becomes inefficient
+if we want to evaluate the surrogate function at many points.
+
+To improve the efficiency, we can use the `update_boss_faster` function,
+which uses pre-computed factorization of the covariance to define the
+surrogate function. The `surrogate` function updated by
+`update_boss_faster` is much more efficient than the original
+`surrogate` function, especially when the number of design points is
+large.
+
+``` r
+br3_update_faster <- update_boss_faster(br3)
+```
+
+``` r
+br3_update$surrogate(c(1,1))
+#> [1] -3.710088
+br3_update_faster$surrogate(c(1,1))
+#> [1] -3.710088
+```
+
+``` r
+compare_runtime <- microbenchmark::microbenchmark(
+  br3_update$surrogate(c(1,1)),
+  br3_update_faster$surrogate(c(1,1)),
+  unit = 'ms',
+  times = 1000
+)
+#> Warning in microbenchmark::microbenchmark(br3_update$surrogate(c(1, 1)), : less
+#> accurate nanosecond times to avoid potential integer overflows
+
+compare_runtime
+#> Unit: milliseconds
+#>                                  expr      min       lq       mean   median
+#>         br3_update$surrogate(c(1, 1)) 0.755343 0.882853 1.10735334 0.922008
+#>  br3_update_faster$surrogate(c(1, 1)) 0.060065 0.064534 0.07178456 0.067650
+#>         uq       max neval
+#>  0.9703265 34.588379  1000
+#>  0.0721805  0.953537  1000
 ```

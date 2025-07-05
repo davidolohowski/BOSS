@@ -104,3 +104,40 @@ plot(br3)
 br3_update <- update_boss(br3)
 ```
 
+
+
+## More efficient surrogate
+
+By default, the current functions `update_boss` and `boss_modal` construct the `surrogate` function using the function `predict_gp`, which implies that each evaluation of the surrogate function requires a full matrix inversion of the covariance matrix. 
+This becomes inefficient if we want to evaluate the surrogate function at many points.
+
+To improve the efficiency, we can use the `update_boss_faster` function, which uses pre-computed factorization of the covariance to define the surrogate function.
+The `surrogate` function updated by `update_boss_faster` is much more efficient than the original `surrogate` function, especially when the number of design points is large.
+
+```{r}
+br3_update_faster <- update_boss_faster(br3)
+```
+
+```{r}
+br3_update$surrogate(c(1,1))
+br3_update_faster$surrogate(c(1,1))
+```
+
+
+```{r}
+compare_runtime <- microbenchmark::microbenchmark(
+  br3_update$surrogate(c(1,1)),
+  br3_update_faster$surrogate(c(1,1)),
+  unit = 'ms',
+  times = 1000
+)
+
+compare_runtime
+```
+
+
+
+
+
+
+
