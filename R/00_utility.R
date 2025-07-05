@@ -303,6 +303,71 @@ predict_gp <- function(data,
 }
 
 
+#' Precompute GP Inversion for Prediction (Internal)
+#'
+#' For given training data, precomputes necessary quantities for fast GP prediction.
+#'
+#' @param data A list with x (design matrix) and y (responses).
+#' @param noise_var Noise variance.
+#' @param choice_cov Covariance function.
+#' @param quad Logical; if TRUE, fit quadratic mean.
+#' @return A list of precomputed quantities.
+predict_gp_internal <- function(data,
+                                noise_var = 1e-6,
+                                choice_cov,
+                                quad = FALSE) {
+  x_obs <- data$x
+  y_obs <- data$y
+
+  N <- nrow(x_obs)
+  D <- ncol(x_obs)
+
+  Koo <- choice_cov(x_obs, x_obs) + noise_var * diag(N)
+  L   <- chol(Koo)
+
+  if (!quad) {
+    # Zero-mean GP
+    tmp   <- forwardsolve(t(L), y_obs)
+    alpha <- backsolve(L, tmp)
+
+    return(list(
+      data  = data,
+      L     = L,
+      alpha = alpha,
+      quad  = FALSE
+    ))
+  } else {
+    # Quadratic mean function
+    Xlin <- cbind(1, x_obs,
+                  t(apply(x_obs, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+
+    # GLS estimate of beta
+    LXs <- forwardsolve(t(L), Xlin)
+    A   <- crossprod(LXs)
+
+    tmp  <- forwardsolve(t(L), y_obs)
+    Ly   <- backsolve(L, tmp)
+    B    <- crossprod(Xlin, Ly)
+    beta <- solve(A, B)
+
+    # Residual GP part
+    residual <- y_obs - Xlin %*% beta
+    tmp_res  <- forwardsolve(t(L), residual)
+    alpha    <- backsolve(L, tmp_res)
+
+    return(list(
+      data  = data,
+      L     = L,
+      alpha = alpha,
+      beta  = beta,
+      quad  = TRUE
+    ))
+  }
+}
+
+
+
+
 
 #' Compute Gaussian Process Log-Likelihood (with Optional Quadratic Mean)
 #'

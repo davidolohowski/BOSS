@@ -27,8 +27,11 @@ The updated \code{boss_result}, with its
 Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
 approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 \enumerate{
-\item Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
-   \deqn{n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.}
+\item Based on the required fill-in distance \code{h}, estimate the required number of quasi-uniform design points by
+  \deqn{
+    n \;=\; \max\Bigl\{\texttt{n\_sample\_max},\;
+                     2\,\mathrm{Vol}(\text{Original box})\;\big/\;h^{D}\Bigr\}.
+  }
 \item Generate a Sobol-sequence within the original box.
 \item Truncate the Sobol-sequence outside the ellipsoid.
 \item Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within \code{h} of existing points.

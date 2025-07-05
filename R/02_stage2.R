@@ -123,8 +123,11 @@ compute_fill_in <- function(boss_result, n_samples = 10000) {
 #' Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
 #' approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 #' \enumerate{
-#' \item Based on the required fill-in distance \code{h}, compute the required number of quasi-uniform design points by
-#'    \deqn{n = \max\{\texttt{n_sample_max}, 2\text{Vol}(\text{Original box})/h^D\}.}
+#' \item Based on the required fill-in distance \code{h}, estimate the required number of quasi-uniform design points by
+#'   \deqn{
+#'     n \;=\; \max\Bigl\{\texttt{n\_sample\_max},\;
+#'                      2\,\mathrm{Vol}(\text{Original box})\;\big/\;h^{D}\Bigr\}.
+#'   }
 #' \item Generate a Sobol-sequence within the original box.
 #' \item Truncate the Sobol-sequence outside the ellipsoid.
 #' \item Compute the distance from existing design points to the Sobol-sequence and remove Sobol-candidates that are within \code{h} of existing points.
@@ -327,6 +330,151 @@ update_boss <- function(boss_result) {
   boss_result$design_points$x_original <- old_dp_xo
   boss_result$design_points$x          <- old_dp_x
   boss_result$design_points$y          <- old_dp_y
+
+  return(boss_result)
+}
+
+
+
+#' Update a \code{boss} Object After Adding New Essential Design Points
+#'
+#' Given a \code{boss} object that already has an \code{essential_design_points} list,
+#' this function does the following:
+#' \enumerate{
+#'   \item Fills in any missing \code{NA} responses by evaluating the objective function.
+#'   \item Recomputes the mode and its Hessian based on the updated design.
+#'   \item Re-fits the GP hyperparameters (length-scale and signal variance) using MLE.
+#'   \item Constructs and stores an efficient \code{surrogate} closure for fast prediction,
+#'         using precomputed posterior weights (and GLS mean model if \code{quad=TRUE}).
+#' }
+#'
+#' This avoids re-solving the full GP system for every prediction.
+#'
+#' @param boss_result A \code{boss} object with fields:
+#'   \describe{
+#'     \item{\code{essential_design_points}}{List with \code{x_original}, \code{y}, \code{x}.}
+#'     \item{\code{lower}, \code{upper}}{Bounds for scaling inputs.}
+#'     \item{\code{objective_function}}{Callable to evaluate new design points.}
+#'     \item{\code{gp_params}}{Includes \code{noise_var}, \code{nu}, \code{quad} flag, etc.}
+#'   }
+#'
+#' @return The updated \code{boss_result}, with:
+#'   \describe{
+#'     \item{\code{essential_design_points$y}}{Updated with evaluated values.}
+#'     \item{\code{mode}, \code{mode_hessian}}{Recomputed for the surrogate.}
+#'     \item{\code{gp_params}}{Updated hyperparameters.}
+#'     \item{\code{surrogate}}{A closure for predicting at new inputs.}
+#'   }
+#'
+#' @export
+#' Update BOSS Object After Adding Essential Design Points
+#'
+#' This updates missing responses, recomputes mode/Hessian,
+#' refits GP hyperparameters, and rebuilds the surrogate function.
+#'
+#' @param boss_result A boss object.
+#' @return Updated boss object.
+update_boss_faster <- function(boss_result) {
+  ## 1) Fill missing y's in essential_design_points
+  ed <- boss_result$essential_design_points
+  nas <- which(is.na(ed$y))
+  if (length(nas) > 0) {
+    for (i in nas) {
+      ed$y[i] <- boss_result$objective_function(ed$x_original[i, ])
+    }
+    boss_result$essential_design_points$y <- ed$y
+  }
+
+  ## 2) Temporarily override design_points
+  old_dp <- boss_result$design_points
+  boss_result$design_points <- list(
+    x_original = ed$x_original,
+    x = sweep(ed$x_original, 2, boss_result$lower, "-") /
+      (boss_result$upper - boss_result$lower),
+    y = ed$y
+  )
+
+  ## 3) Update mode and Hessian
+  boss_result <- update_hessian(boss_result)
+
+  ## 4) Refit GP hyperparameters
+  x_scaled <- boss_result$design_points$x
+  y_obs    <- boss_result$design_points$y - mean(boss_result$design_points$y)
+  signal_var <- var(y_obs)
+
+  opt <- optim(
+    runif(1, 0.01, 0.99),
+    function(l) compute_like(
+      length_scale = l,
+      y = y_obs,
+      x = x_scaled,
+      D = boss_result$D,
+      nu = boss_result$gp_params$nu,
+      quad = boss_result$quad,
+      signal_var = signal_var,
+      noise_var = boss_result$noise_var
+    ),
+    control = list(maxit = 1000),
+    lower = 0.01,
+    upper = 0.99,
+    method = 'L-BFGS-B'
+  )
+
+  boss_result$gp_params$length_scale <- opt$par
+  boss_result$gp_params$signal_var   <- signal_var
+
+  ## 5) Precompute for prediction
+  intern <- predict_gp_internal(
+    data = list(
+      x = boss_result$essential_design_points$x,
+      y = (boss_result$essential_design_points$y - mean(boss_result$essential_design_points$y))
+    ),
+    noise_var = boss_result$noise_var,
+    choice_cov = cov_generator(
+      length_scale = boss_result$gp_params$length_scale,
+      nu           = boss_result$gp_params$nu,
+      signal_var   = boss_result$gp_params$signal_var
+    ),
+    quad = boss_result$quad
+  )
+
+  ## 6) Build surrogate closure
+  boss_result$surrogate <- local({
+    x_obs <- intern$data$x
+    alpha <- intern$alpha
+    beta  <- if (intern$quad) intern$beta else NULL
+    covfn <- cov_generator(
+      length_scale = boss_result$gp_params$length_scale,
+      nu           = boss_result$gp_params$nu,
+      signal_var   = boss_result$gp_params$signal_var
+    )
+    lower <- boss_result$lower
+    upper <- boss_result$upper
+    D     <- boss_result$D
+
+    function(xnew) {
+      xnew <- matrix(xnew, ncol = D)
+
+      # Scale
+      x_s <- sweep(xnew, 2, lower, "-") / (upper - lower)
+
+      # Cross-cov
+      k_star <- covfn(x_obs, x_s)
+
+      if (intern$quad) {
+        X_star <- cbind(1, x_s,
+                        t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+        mean_pred <- as.numeric(X_star %*% beta + k_star %*% alpha)
+      } else {
+        mean_pred <- as.numeric(k_star %*% alpha)
+      }
+
+      return(mean_pred + mean(boss_result$essential_design_points$y))
+    }
+  })
+
+  ## 7) Restore original design_points
+  boss_result$design_points <- old_dp
 
   return(boss_result)
 }
