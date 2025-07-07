@@ -47,12 +47,12 @@ br2 <- boss(f1d, D = 1,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.46 seconds.
+#> Total time taken: 1.65 seconds.
 #> Start updating Hessian at the mode...
-#> Hessian updated in  0.01  seconds.
+#> Hessian updated in  0  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
-#> fill in: added 17 point(s).
-#> Final update completed in  0.02  seconds.
+#> fill in: added 19 point(s).
+#> Final update completed in  0.01  seconds.
 plot(br2)
 ```
 
@@ -71,7 +71,7 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.14 seconds.
+#> Total time taken: 1.06 seconds.
 br <- update_hessian(br)
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
@@ -100,7 +100,7 @@ br3 <- boss(f2d, D = 2,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 2.45 seconds.
+#> Total time taken: 1.92 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0.01  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
@@ -109,9 +109,9 @@ br3 <- boss(f2d, D = 2,
 #> achieved.
 #> fill in: added 100 point(s).
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
-#> Updated fill-in distance is (0.423571) > target h (0.100000); Adjust your
+#> Updated fill-in distance is (0.516061) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.09  seconds.
+#> Final update completed in  0.08  seconds.
 plot(br3)
 ```
 
@@ -129,7 +129,7 @@ br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 6.6 seconds.
+#> Total time taken: 3.58 seconds.
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -139,7 +139,7 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Number of points to be added
 #> is greater than max_add. Required h may not be achieved.
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Updated fill-in distance is
-#> (0.431124) > target h (0.100000); Adjust your expectation by either increasing
+#> (0.506232) > target h (0.100000); Adjust your expectation by either increasing
 #> max_add and n_sample_max or increasing h.
 plot(br3)
 ```
@@ -172,9 +172,9 @@ br3_update_faster <- update_boss_faster(br3)
 
 ``` r
 br3_update$surrogate(c(1,1))
-#> [1] -5.720378
+#> [1] -2.95435
 br3_update_faster$surrogate(c(1,1))
-#> [1] -5.720378
+#> [1] -2.95435
 ```
 
 ``` r
@@ -189,10 +189,93 @@ compare_runtime <- microbenchmark::microbenchmark(
 
 compare_runtime
 #> Unit: milliseconds
-#>                                  expr      min        lq       mean   median
-#>         br3_update$surrogate(c(1, 1)) 1.552998 1.6727590 1.85613851 1.714271
-#>  br3_update_faster$surrogate(c(1, 1)) 0.079950 0.0855875 0.09662696 0.090487
+#>                                  expr      min       lq       mean   median
+#>         br3_update$surrogate(c(1, 1)) 1.596909 1.723086 1.92519297 1.758244
+#>  br3_update_faster$surrogate(c(1, 1)) 0.079294 0.084952 0.09160458 0.089626
 #>        uq      max neval
-#>  1.787313 7.150113  1000
-#>  0.097252 2.769140  1000
+#>  1.817571 7.898322  1000
+#>  0.094505 0.204836  1000
+```
+
+## More efficient BO
+
+Each evaluation of the AF also involves computing all the GP-related
+quantities, which can be made more efficient in the same way as above.
+
+``` r
+set.seed(123)
+br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
+                        lower = -c(3,3), upper = c(3,3),
+                        initial_design = 10,
+                        quad = TRUE,
+                        update_step = 10,
+                        max_iter = 100,
+                        verbose = 1)
+#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
+#> Stage 1: BOSS finished.
+#> Total time taken: 4.72 seconds.
+
+set.seed(123)
+br3_v2 <- BOSS:::BOSS_modal_v2(func = f2d, D = 2,
+                        lower = -c(3,3), upper = c(3,3),
+                        initial_design = 10,
+                        quad = TRUE,
+                        update_step = 10,
+                        max_iter = 100,
+                        verbose = 1)
+#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
+#> Stage 1: BOSS finished.
+#> Total time taken: 1.58 seconds.
+```
+
+The two implementation are pragmatically the same in terms of the design
+points queried.
+
+``` r
+mean(abs(br3$design_points$x - br3_v2$design_points$x))
+#> [1] 2.846547e-06
+```
+
+``` r
+mean(abs(br3$design_points$y - br3_v2$design_points$y))
+#> [1] 3.685032e-08
+```
+
+Similarly for the 1-D example:
+
+``` r
+set.seed(123)
+br2 <- BOSS:::BOSS_modal(func = f1d, D = 1,
+                        lower = 0, upper = 2,
+                        update_step = 5,
+                        quad = FALSE,
+                        max_iter = 20,
+                        verbose = 1)
+#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
+#> Stage 1: BOSS finished.
+#> Total time taken: 0.66 seconds.
+
+set.seed(123)
+br2_v2 <- BOSS:::BOSS_modal_v2(func = f1d, D = 1,
+                        lower = 0, upper = 2,
+                        update_step = 5,
+                        quad = FALSE,
+                        max_iter = 20,
+                        verbose = 1)
+#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
+#> Stage 1: BOSS finished.
+#> Total time taken: 0.42 seconds.
+```
+
+Check the two versions of the 1-D BOSS algorithm produce the same design
+points:
+
+``` r
+mean(abs(br2$design_points$x - br2_v2$design_points$x))
+#> [1] 4.132201e-06
+```
+
+``` r
+mean(abs(br2$design_points$y - br2_v2$design_points$y))
+#> [1] 3.651527e-07
 ```

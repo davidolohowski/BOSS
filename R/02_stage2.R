@@ -335,7 +335,6 @@ update_boss <- function(boss_result) {
 }
 
 
-
 #' Update a \code{boss} Object After Adding New Essential Design Points
 #'
 #' Given a \code{boss} object that already has an \code{essential_design_points} list,
@@ -367,13 +366,6 @@ update_boss <- function(boss_result) {
 #'   }
 #'
 #' @export
-#' Update BOSS Object After Adding Essential Design Points
-#'
-#' This updates missing responses, recomputes mode/Hessian,
-#' refits GP hyperparameters, and rebuilds the surrogate function.
-#'
-#' @param boss_result A boss object.
-#' @return Updated boss object.
 update_boss_faster <- function(boss_result) {
   ## 1) Fill missing y's in essential_design_points
   ed <- boss_result$essential_design_points

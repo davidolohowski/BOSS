@@ -138,8 +138,70 @@ compare_runtime
 ```
 
 
+## More efficient BO
+
+Each evaluation of the AF also involves computing all the GP-related quantities, which can be made more efficient in the same way as above.
+
+```{r}
+set.seed(123)
+br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
+                        lower = -c(3,3), upper = c(3,3),
+                        initial_design = 10,
+                        quad = TRUE,
+                        update_step = 10,
+                        max_iter = 100,
+                        verbose = 1)
+
+set.seed(123)
+br3_v2 <- BOSS:::BOSS_modal_v2(func = f2d, D = 2,
+                        lower = -c(3,3), upper = c(3,3),
+                        initial_design = 10,
+                        quad = TRUE,
+                        update_step = 10,
+                        max_iter = 100,
+                        verbose = 1)
+```
 
 
+The two implementation are pragmatically the same in terms of the design points queried.
 
+```{r}
+mean(abs(br3$design_points$x - br3_v2$design_points$x))
+```
+
+```{r}
+mean(abs(br3$design_points$y - br3_v2$design_points$y))
+```
+
+Similarly for the 1-D example:
+
+
+```{r}
+set.seed(123)
+br2 <- BOSS:::BOSS_modal(func = f1d, D = 1,
+                        lower = 0, upper = 2,
+                        update_step = 5,
+                        quad = FALSE,
+                        max_iter = 20,
+                        verbose = 1)
+
+set.seed(123)
+br2_v2 <- BOSS:::BOSS_modal_v2(func = f1d, D = 1,
+                        lower = 0, upper = 2,
+                        update_step = 5,
+                        quad = FALSE,
+                        max_iter = 20,
+                        verbose = 1)
+```
+
+Check the two versions of the 1-D BOSS algorithm produce the same design points:
+
+```{r}
+mean(abs(br2$design_points$x - br2_v2$design_points$x))
+```
+
+```{r}
+mean(abs(br2$design_points$y - br2_v2$design_points$y))
+```
 
 

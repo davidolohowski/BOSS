@@ -2,36 +2,22 @@
 % Please edit documentation in R/00_utility.R
 \name{predict_gp_internal}
 \alias{predict_gp_internal}
-\title{Precompute GP Posterior Quantities for Fast Prediction}
+\title{Precompute GP Inversion for Prediction (Internal)}
 \usage{
-predict_gp_internal(x_obs, y_obs, noise_var, choice_cov, quad = FALSE)
+predict_gp_internal(data, noise_var = 1e-06, choice_cov, quad = FALSE)
 }
 \arguments{
-\item{x_obs}{Matrix of observed input locations (rows are points, columns are dimensions).}
+\item{data}{A list with x (design matrix) and y (responses).}
 
-\item{y_obs}{Vector of observed responses (centered if desired).}
+\item{noise_var}{Noise variance.}
 
-\item{noise_var}{Observation noise variance (scalar).}
+\item{choice_cov}{Covariance function.}
 
-\item{choice_cov}{Covariance function returning kernel matrices.}
-
-\item{quad}{Logical; whether to fit a quadratic mean model.}
+\item{quad}{Logical; if TRUE, fit quadratic mean.}
 }
 \value{
-A list with elements:
-  \describe{
-    \item{\code{L}}{Cholesky factor of the noisy covariance matrix.}
-    \item{\code{alpha}}{Posterior weight vector for residuals.}
-    \item{\code{beta}}{If \code{quad=TRUE}, GLS-estimated coefficients for the quadratic mean.}
-    \item{\code{quad}}{Logical indicating whether quadratic model was used.}
-  }
+A list of precomputed quantities.
 }
 \description{
-This internal helper computes once the expensive Cholesky factor and
-the posterior coefficients (α, β) of the GP regression given training data.
+For given training data, precomputes necessary quantities for fast GP prediction.
 }
-\details{
-It is intended for use inside a BOSS object's surrogate closure, to avoid
-repeatedly solving the GP system at prediction time.
-}
-\keyword{internal}

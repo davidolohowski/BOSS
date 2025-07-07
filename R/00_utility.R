@@ -364,6 +364,8 @@ predict_gp_internal <- function(data,
     return(list(
       data  = data,
       L     = L,
+      LXs   = LXs,
+      chol_A = chol(A),
       alpha = alpha,
       beta  = beta,
       quad  = TRUE
@@ -371,6 +373,88 @@ predict_gp_internal <- function(data,
   }
 }
 
+
+
+
+#' Predict Mean and Variance from Precomputed GP Internals
+#'
+#' Given a pre-fitted GP model from \code{predict_gp_internal}, this function predicts
+#' the posterior mean and variance at new input locations.
+#'
+#' It reuses all precomputed Cholesky factors and regression coefficients to avoid
+#' redundant matrix decompositions, supporting both zero-mean GP models and those
+#' with a quadratic mean function.
+#'
+#' @param xnew A numeric matrix or vector of new input locations (each row is a point).
+#' @param intern The precomputed GP internals as returned by \code{predict_gp_internal},
+#'   including Cholesky factors, alpha vector, (optionally) regression coefficients, etc.
+#' @param covfn A covariance function (e.g., from \code{cov_generator}) taking two arguments,
+#'   returning a covariance matrix between inputs.
+#' @param D Integer; the dimension of the input space.
+#'
+#' @return A list with:
+#'   \describe{
+#'     \item{mean}{Posterior predictive mean at \code{xnew}.}
+#'     \item{var}{Posterior predictive covariance matrix at \code{xnew}.}
+#'   }
+#' @examples
+#' # Example usage (assuming `intern` has been fitted):
+#' # result <- obtain_mean_var_internal(new_points, intern, covfn, D)
+obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
+  gp_predict <- local({
+    L <- intern$L
+    x_obs <- intern$data$x
+    alpha <- intern$alpha
+    beta  <- if (intern$quad) intern$beta else NULL
+    LXs   <- if (intern$quad) intern$LXs else NULL
+    chol_A <- if (intern$quad) intern$chol_A else NULL
+    lower <- 0
+    upper <- 1
+
+    function(xnew_input) {
+      xnew_input <- matrix(xnew_input, ncol = D)
+      # Do not scale inputs in UCB computation
+      # x_s <- sweep(xnew_input, 2, lower, "-") / (upper - lower)
+      x_s <- xnew_input  # No scaling for UCB
+
+
+      # Compute cross-covariances
+      K_obs_pred <- covfn(x_obs, x_s)
+      K_pred_pred <- covfn(x_s, x_s)
+
+      if (intern$quad) {
+        # Quadratic design matrix for new points
+        X_star <- cbind(
+          1,
+          x_s,
+          t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)]))
+        )
+        mean_pred <- as.numeric(X_star %*% beta + K_obs_pred %*% alpha)
+
+        # Variance parts
+        LK_pred <- forwardsolve(t(L), t(K_obs_pred))
+        var_part1 <- K_pred_pred - crossprod(LK_pred)
+
+        delta <- X_star - t(crossprod(LXs, LK_pred))
+        Ldelta <- forwardsolve(t(chol_A), t(delta))
+        var_part2 <- crossprod(Ldelta)
+
+        cond_var <- var_part1 + var_part2
+      } else {
+        mean_pred <- as.numeric(K_obs_pred %*% alpha)
+        LK_pred <- forwardsolve(t(L), t(K_obs_pred))
+        cond_var <- K_pred_pred - crossprod(LK_pred)
+      }
+
+      return(list(
+        mean = mean_pred,
+        var = cond_var
+      ))
+    }
+  })
+
+  return(gp_predict(xnew))
+}
 
 
 
@@ -546,7 +630,6 @@ compute_like <- function(length_scale, x, y,
 #' #               y = rnorm(10))
 #' # UCB(seq(0,1,length.out=5), data, cov_fn, nv = 1e-3, D = 10, d = 2)
 #'
-#' @export
 UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
   fnew <- predict_gp(data = data, x_pred = x, choice_cov = cov, noise_var = nv, quad = quad)
 
@@ -556,6 +639,43 @@ UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
 }
 
 
+
+#' Upper Confidence Bound (UCB) Acquisition Function (Using GP Internals)
+#'
+#' Compute the UCB acquisition value (to be maximized) at candidate input locations,
+#' using precomputed GP internal quantities for efficiency.
+#'
+#' @param x Numeric vector or matrix of candidate input locations. Each row is a point in input space.
+#' @param intern Precomputed GP internals (from \code{\link[BOSS]{predict_gp_internal}}).
+#' @param covfn Covariance-generating function (e.g., returned by \code{\link[BOSS]{cov_generator}}).
+#' @param nv Numeric scalar. Observation noise variance.
+#' @param num_training Integer. Total number of GP training points.
+#' @param D Integer. Dimensionality of the input space.
+#' @param delta Numeric scalar. The UCB exploration–exploitation tradeoff parameter.
+#'
+#' @return Numeric vector of UCB acquisition values (higher is better). Internally returns
+#'   \eqn{-\mu(x) - \sqrt{\beta\,\Sigma(x)}} so that minimizing this quantity corresponds to
+#'   maximizing the classic UCB acquisition \eqn{\mu + \sqrt{\beta\,\sigma^2}}.
+#'
+#' @details
+#' The exploration–exploitation tradeoff parameter \eqn{\beta} is set as
+#' \deqn{\beta = 2\log\bigl(D^2\pi^2/(6\,d)\bigr).}
+#' The function uses the precomputed GP internals to efficiently evaluate the
+#' posterior mean \eqn{\mu(x)} and variance \eqn{\sigma^2(x)} at new candidate locations,
+#' avoiding recomputation of the Cholesky factorization of the training covariance matrix.
+#'
+#' @examples
+#' # Not run
+#' # intern <- predict_gp_internal(data, nv, covfn, quad = FALSE)
+#' # UCB_internal(candidate_points, intern, covfn, nv, D, d)
+#'
+UCB_internal <- function(x, intern, covfn, nv, D, delta, num_training) {
+  # Call obtain_mean_var_internal to get mean and variance
+  fnew <- obtain_mean_var_internal(x = x, intern = intern, covfn = covfn, D = D)
+  # Compute the UCB acquisition function
+  beta <- 2 * log((num_training^2) * (pi^2) / (6 * delta))
+  return(as.numeric(-fnew$mean - sqrt(beta * diag(fnew$var))))
+}
 
 
 #' Pure Exploration Acquisition Function
@@ -585,6 +705,28 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 
   # Compute the pure exploration acquisition function
   return(as.numeric(-fnew$var))
+}
+
+
+#' Pure Exploration Acquisition Function (Using GP Internals)
+#'
+#' Compute a variance-only acquisition value for Bayesian optimization,
+#' favoring points with the highest posterior uncertainty.
+#'
+#' @param x Numeric vector or matrix of candidate input locations. Each row is a point in input space.
+#' @param intern Precomputed GP internals (from \code{\link[BOSS]{predict_gp_internal}}).
+#' @param covfn Covariance-generating function (e.g., returned by \code{\link[BOSS]{cov_generator}}).
+#' @param nv Numeric scalar. Observation noise variance.
+#' @param D Integer. Dimensionality of the input space.
+#'
+#' @return Numeric vector of exploration scores \eqn{-\sigma^2(x)}. Minimizing this corresponds to selecting
+#'   inputs with the largest posterior variance.
+#'
+EXPLORE_internal <- function(x, intern, covfn, nv, D) {
+  # Call obtain_mean_var_internal to get mean and variance
+  fnew <- obtain_mean_var_internal(x = x, intern = intern, covfn = covfn, D = D)
+  # Compute the pure exploration acquisition function
+  return(as.numeric(-diag(fnew$var)))
 }
 
 
