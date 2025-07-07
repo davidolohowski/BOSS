@@ -343,9 +343,14 @@ predict_gp_internal <- function(data,
       quad  = FALSE
     ))
   } else {
-    # Quadratic mean function
-    Xlin <- cbind(1, x_obs,
-                  t(apply(x_obs, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+    if(D == 1) {
+      # Design matrix for 1D case
+      Xlin <- cbind(1, x_obs, x_obs^2)
+    } else {
+      # Design matrix for multi-dimensional case
+      Xlin <- cbind(1, x_obs,
+                    t(apply(x_obs, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+    }
 
     # GLS estimate of beta
     LXs <- forwardsolve(t(L), Xlin)
@@ -423,13 +428,18 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
       K_pred_pred <- covfn(x_s, x_s)
 
       if (intern$quad) {
-        # Quadratic design matrix for new points
-        X_star <- cbind(
-          1,
-          x_s,
-          t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)]))
-        )
-        mean_pred <- as.numeric(X_star %*% beta + K_obs_pred %*% alpha)
+        if (D == 1) {
+          # Quadratic design matrix for new points in 1D
+          X_star <- cbind(1, x_s, x_s^2)
+        } else {
+          # Quadratic design matrix for new points in multi-D
+          X_star <- cbind(
+            1,
+            x_s,
+            t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)]))
+          )
+        }
+        mean_pred <- as.vector(X_star %*% beta + K_obs_pred %*% alpha)
 
         # Variance parts
         LK_pred <- forwardsolve(t(L), t(K_obs_pred))
@@ -441,7 +451,7 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
 
         cond_var <- var_part1 + var_part2
       } else {
-        mean_pred <- as.numeric(K_obs_pred %*% alpha)
+        mean_pred <- as.vector(K_obs_pred %*% alpha)
         LK_pred <- forwardsolve(t(L), t(K_obs_pred))
         cond_var <- K_pred_pred - crossprod(LK_pred)
       }
