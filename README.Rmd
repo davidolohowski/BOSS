@@ -61,7 +61,7 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         quad = FALSE,
                         max_iter = 20,
                         verbose = 1)
-br <- update_hessian(br)
+br <- update_hessian(br, approach = "num.obj")
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
@@ -96,7 +96,7 @@ br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         max_iter = 100,
                         verbose = 1)
 
-br3 <- update_hessian(br3)
+br3 <- update_hessian(br3, approach = "num.obj")
 br3 <- compute_essential_support(br3, alpha = 0.05)
 br3 <- construct_essential_designs(br3)
 br3 <- compute_fill_in(br3, n_samples = 100000)
