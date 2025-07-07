@@ -120,7 +120,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
   if (!is.null(opt.lengthscale.grid)) {
     length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
     like_vec <- sapply(length_scale_vec, function(l)
-      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+      -compute_like(length_scale = l, y = yvec, x = xmat_trans,
                    quad = quad, D = D,
                    signal_var = signal_var, noise_var = noise_var))
     max_idx <- which.max(like_vec)
