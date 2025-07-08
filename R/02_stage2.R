@@ -349,43 +349,18 @@ update_boss <- function(boss_result) {
   )
 
   ## 6) Build surrogate closure
-  boss_result$surrogate <- local({
-    x_obs <- intern$data$x
-    alpha <- intern$alpha
-    beta  <- if (intern$quad) intern$beta else NULL
-    covfn <- cov_generator(
-      length_scale = boss_result$gp_params$length_scale,
-      nu           = boss_result$gp_params$nu,
-      signal_var   = boss_result$gp_params$signal_var
-    )
-    lower <- boss_result$lower
-    upper <- boss_result$upper
-    D     <- boss_result$D
-
-    function(xnew) {
-      xnew <- matrix(xnew, ncol = D)
-
-      # Scale
-      x_s <- sweep(xnew, 2, lower, "-") / (upper - lower)
-
-      # Cross-cov
-      k_star <- covfn(x_obs, x_s)
-
-      if (intern$quad) {
-        if(D == 1){
-          X_star <- cbind(1, x_s, x_s^2)
-        }else{
-          X_star <- cbind(1, x_s,
-                          t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
-        }
-        mean_pred <- as.numeric(X_star %*% beta + k_star %*% alpha)
-      } else {
-        mean_pred <- as.numeric(k_star %*% alpha)
-      }
-
-      return(mean_pred + mean(boss_result$essential_design_points$y))
-    }
-  })
+  boss_result$surrogate <- function(xnew){
+    # Scale
+    xnew <- matrix(xnew, ncol = boss_result$D)
+    x_s <- sweep(xnew, 2, boss_result$lower, "-") / (boss_result$upper - boss_result$lower)
+    obtain_mean_internal(
+      xnew = x_s, intern = intern,
+      covfn = cov_generator(
+        length_scale = boss_result$gp_params$length_scale,
+        nu           = boss_result$gp_params$nu,
+        signal_var   = boss_result$gp_params$signal_var),
+      D = boss_result$D) + mean(boss_result$essential_design_points$y)
+  }
 
   ## 7) Restore original design_points
   boss_result$design_points <- old_dp

@@ -36,6 +36,7 @@ This is a basic example which shows you how to solve a simple problem in 1-D.
 Assume the true (log) marginal likelihood is given by the following sinusoidal function:
 
 ```{r example}
+set.seed(1234)
 library(BOSS)
 f1d <- function(x) sin(0.5*pi*x)
 ```
@@ -85,6 +86,8 @@ br3 <- boss(f2d, D = 2,
             modal_opts = list(lower = -c(3,3), upper = c(3,3)),
             alpha = 0.05, h = 0.1, verbose = 1)
 plot(br3)
+
+br3$surrogate(c(1,2))
 ```
 
 Similarly, users can also have more modular control over the procedure:
@@ -97,6 +100,8 @@ br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         update_step = 10,
                         max_iter = 100,
                         verbose = 1)
+br3$surrogate(c(1,2))
+
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -106,5 +111,6 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 plot(br3)
 
 br3_update <- update_boss(br3)
+br3_update$surrogate(c(1,2))
 ```
 

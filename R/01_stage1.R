@@ -316,15 +316,21 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
     cat("Total time taken:", round(difftime(end_time, start_time, units = "secs"), 2), "seconds.\n")
   }
 
+  intern <- predict_gp_internal(
+    data = list(x = xmat_trans, y = (yvec)),
+    noise_var = noise_var,
+    choice_cov = choice_cov,
+    quad = quad
+  )
+
   surrogate_fn <- function(xvalue) {
-    xvalue_transform <- (xvalue - lower) / (upper - lower)
-    predict_gp(
-      data    = list(x = xmat_trans, y = (yvec)),
-      x_pred  = matrix(xvalue_transform, ncol = D),
-      choice_cov = choice_cov,
-      noise_var  = noise_var,
-      quad       = quad
-    )$mean + rel
+    xvalue <- matrix(xvalue, ncol = D)
+    xvalue_transform <- sweep(xvalue, 2, lower, "-") / (upper - lower)
+
+    obtain_mean_internal(
+      xnew = xvalue_transform, intern = intern,
+      covfn = choice_cov,
+      D = D) + rel
   }
 
   boss_result <- structure(list(

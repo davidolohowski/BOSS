@@ -30,6 +30,7 @@ Assume the true (log) marginal likelihood is given by the following
 sinusoidal function:
 
 ``` r
+set.seed(1234)
 library(BOSS)
 f1d <- function(x) sin(0.5*pi*x)
 ```
@@ -47,12 +48,12 @@ br2 <- boss(f1d, D = 1,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.98 seconds.
+#> Total time taken: 0.78 seconds.
 #> Start updating Hessian at the mode...
-#> Hessian updated in  0  seconds.
+#> Hessian updated in  0.02  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
-#> fill in: added 20 point(s).
-#> Final update completed in  0.01  seconds.
+#> fill in: added 17 point(s).
+#> Final update completed in  0.04  seconds.
 plot(br2)
 ```
 
@@ -71,14 +72,14 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.77 seconds.
+#> Total time taken: 0.54 seconds.
 
 br <- update_hessian(br, approach = "num.obj")
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
 br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
-#> fill in: added 17 point(s).
+#> fill in: added 19 point(s).
 br_update <- update_boss(br)
 plot(br_update)
 ```
@@ -102,22 +103,28 @@ br3 <- boss(f2d, D = 2,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 2.76 seconds.
+#> Total time taken: 1.44 seconds.
 #> Start updating Hessian at the mode...
-#> Hessian updated in  0.01  seconds.
+#> Hessian updated in  0.03  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
 #> Number of points to be added is greater than max_add. Required h may not be
 #> achieved.
 #> fill in: added 100 point(s).
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
-#> Updated fill-in distance is (0.447453) > target h (0.100000); Adjust your
+#> Updated fill-in distance is (0.453957) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.08  seconds.
+#> Final update completed in  0.21  seconds.
 plot(br3)
 ```
 
 <img src="man/figures/README-exmple2d-1.png" width="100%" />
+
+``` r
+
+br3$surrogate(c(1,2))
+#> [1] -8.048282
+```
 
 Similarly, users can also have more modular control over the procedure:
 
@@ -131,7 +138,10 @@ br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 2.9 seconds.
+#> Total time taken: 1.91 seconds.
+br3$surrogate(c(1,2))
+#> [1] -10.73885
+
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -141,7 +151,7 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Number of points to be added
 #> is greater than max_add. Required h may not be achieved.
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Updated fill-in distance is
-#> (0.444944) > target h (0.100000); Adjust your expectation by either increasing
+#> (0.445567) > target h (0.100000); Adjust your expectation by either increasing
 #> max_add and n_sample_max or increasing h.
 plot(br3)
 ```
@@ -151,4 +161,6 @@ plot(br3)
 ``` r
 
 br3_update <- update_boss(br3)
+br3_update$surrogate(c(1,2))
+#> [1] -8.094643
 ```
