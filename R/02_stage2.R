@@ -372,8 +372,12 @@ update_boss <- function(boss_result) {
       k_star <- covfn(x_obs, x_s)
 
       if (intern$quad) {
-        X_star <- cbind(1, x_s,
-                        t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+        if(D == 1){
+          X_star <- cbind(1, x_s, x_s^2)
+        }else{
+          X_star <- cbind(1, x_s,
+                          t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+        }
         mean_pred <- as.numeric(X_star %*% beta + k_star %*% alpha)
       } else {
         mean_pred <- as.numeric(k_star %*% alpha)

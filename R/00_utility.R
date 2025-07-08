@@ -424,9 +424,8 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
 
     function(xnew_input) {
       xnew_input <- matrix(xnew_input, ncol = D)
-      # Do not scale inputs in UCB computation
-      # x_s <- sweep(xnew_input, 2, lower, "-") / (upper - lower)
-      x_s <- xnew_input  # No scaling for UCB
+      # Do not scale inputs in internal computation
+      x_s <- xnew_input
 
 
       # Compute cross-covariances
@@ -434,12 +433,14 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
       K_pred_pred <- covfn(x_s, x_s)
 
       if (intern$quad) {
-        # Quadratic design matrix for new points
-        X_star <- cbind(
-          1,
-          x_s,
-          t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)]))
-        )
+        if (D == 1) {
+          # Quadratic design matrix for new points
+          X_star <- cbind(1, x_s, x_s ^ 2)
+        } else {
+          # Quadratic design matrix for new points
+          X_star <- cbind(1, x_s, t(apply(x_s, 1, function(x)
+            (x %o% x)[upper.tri(diag(D), TRUE)])))
+        }
         mean_pred <- as.numeric(X_star %*% beta + K_obs_pred %*% alpha)
 
         # Variance parts
@@ -467,6 +468,94 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
   return(gp_predict(xnew))
 }
 
+
+#' Predict Posterior Mean Only Using GP Internals
+#'
+#' Computes the posterior mean at new input locations using precomputed GP internals.
+#'
+#' @param xnew Numeric vector or matrix of new input locations. Each row is a test point.
+#' @param intern Precomputed GP internals (list) returned by \code{\link[BOSS]{predict_gp_internal}}.
+#' @param covfn Covariance-generating function (e.g. from \code{\link[BOSS]{cov_generator}}).
+#' @param D Integer. Dimensionality of the input space.
+#'
+#' @return Numeric vector of posterior means at the new locations.
+#'
+#' @details
+#' This function reuses precomputed Cholesky factorizations and regression coefficients
+#' from \code{intern} to quickly evaluate the GP posterior mean without recomputing the covariance inversion.
+#'
+#' @examples
+#' # Not run
+#' # intern <- predict_gp_internal(data, nv, covfn)
+#' # obtain_mean_internal(xnew, intern, covfn, D)
+obtain_mean_internal <- function(xnew, intern, covfn, D) {
+  gp_predict <- local({
+    L <- intern$L
+    x_obs <- intern$data$x
+    alpha <- intern$alpha
+    beta  <- if (intern$quad) intern$beta else NULL
+    lower <- 0
+    upper <- 1
+
+    function(xnew_input) {
+      xnew_input <- matrix(xnew_input, ncol = D)
+      x_s <- xnew_input
+
+      # Compute cross-covariances
+      K_obs_pred <- covfn(x_obs, x_s)
+      K_pred_pred <- covfn(x_s, x_s)
+
+      if (intern$quad) {
+        if (D == 1) {
+          # Quadratic design matrix for new points
+          X_star <- cbind(1, x_s, x_s ^ 2)
+        } else {
+          # Quadratic design matrix for new points
+          X_star <- cbind(1, x_s, t(apply(x_s, 1, function(x)
+            (x %o% x)[upper.tri(diag(D), TRUE)])))
+        }
+        mean_pred <- as.numeric(X_star %*% beta + K_obs_pred %*% alpha)
+      } else {
+        mean_pred <- as.numeric(K_obs_pred %*% alpha)
+      }
+
+      return(mean_pred)
+    }
+  })
+
+  return(gp_predict(xnew))
+}
+
+
+#' Simulate One GP Realization at New Locations
+#'
+#' Generates a single joint sample from the posterior GP at new input locations,
+#' using precomputed GP internals for efficiency.
+#'
+#' @param xnew Numeric vector or matrix of new input locations. Each row is a test point.
+#' @param intern Precomputed GP internals (list) returned by \code{\link[BOSS]{predict_gp_internal}}.
+#' @param covfn Covariance-generating function (e.g. from \code{\link[BOSS]{cov_generator}}).
+#' @param D Integer. Dimensionality of the input space.
+#'
+#' @return Numeric vector. A single joint sample from the multivariate normal posterior at the new locations.
+#'
+#' @details
+#' This function uses \code{\link[BOSS]{obtain_mean_var_internal}} to obtain
+#' the posterior mean and covariance matrix, then draws one realization using
+#' \code{MASS::mvrnorm}.
+#'
+#' @examples
+#' # Not run
+#' # intern <- predict_gp_internal(data, nv, covfn)
+#' # sim_once_internal(xnew, intern, covfn, D)
+sim_once_internal <- function(xnew, intern, covfn, D) {
+  mean_var <- obtain_mean_var_internal(xnew = xnew,
+                                       intern = intern,
+                                       covfn = covfn,
+                                       D = D)
+  sim <- MASS::mvrnorm(1, as.vector(mean_var$mean), mean_var$var)
+  return(sim)
+}
 
 
 
