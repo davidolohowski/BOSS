@@ -15,7 +15,7 @@ model, optionally including a linear-plus-quadratic mean function."></head><body
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.26</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.27</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,16 +46,7 @@ model, optionally including a linear-plus-quadratic mean function.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compute_like</span><span class="op">(</span></span>
-<span>  <span class="va">length_scale</span>,</span>
-<span>  <span class="va">x</span>,</span>
-<span>  <span class="va">y</span>,</span>
-<span>  <span class="va">signal_var</span>,</span>
-<span>  <span class="va">noise_var</span>,</span>
-<span>  <span class="va">D</span>,</span>
-<span>  quad <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  nu <span class="op">=</span> <span class="cn">Inf</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compute_like</span><span class="op">(</span>length_scale <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">x</span>, <span class="va">y</span>, <span class="va">noise_var</span>, <span class="va">D</span>, quad <span class="op">=</span> <span class="cn">FALSE</span>, nu <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,10 +63,6 @@ model, optionally including a linear-plus-quadratic mean function.</p>
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
 <dd><p>Numeric vector of training responses.</p></dd>
-
-
-<dt id="arg-signal-var">signal_var<a class="anchor" aria-label="anchor" href="#arg-signal-var"></a></dt>
-<dd><p>Positive numeric scalar specifying the GP signal variance (\(\sigma^2\)).</p></dd>
 
 
 <dt id="arg-noise-var">noise_var<a class="anchor" aria-label="anchor" href="#arg-noise-var"></a></dt>
@@ -100,7 +87,8 @@ Defaults to <code>Inf</code>, selecting the Squared Exponential kernel.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A numeric scalar giving the negative log-likelihood (up to an additive constant).
   Extremely large values (\(10^{20}\)) are returned if the computation produces NaN, NA,
-  or infinite results.</p>
+  or infinite results. If <code>length_scale == NULL</code>, return instead the GP signal variance
+  (\(\sigma^2\)) depending on the value of <code>quad</code> estimated by MLE.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
