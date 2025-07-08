@@ -1,8 +1,8 @@
-pandoc: '3.5'
-pkgdown: 2.1.1
+pandoc: '3.4'
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles: {}
-last_built: 2025-07-07T16:54Z
+last_built: 2025-07-08T01:32Z
 urls:
   reference: https://davidolohowski.github.io/BOSS/reference
   article: https://davidolohowski.github.io/BOSS/articles

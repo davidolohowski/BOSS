@@ -248,94 +248,7 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 }
 
 
-
-
-#' Update a \code{boss} Object After Filling Essential Design Points
-#'
-#' Given a \code{boss_result} with \code{essential_design_points} already constructed,
-#' this function will:
-#' \enumerate{
-#'  \item Fill in any missing responses (\code{NA}) by evaluating the objective.
-#'  \item Recompute the mode and Hessian at the mode.
-#'  \item Re‐fit the GP hyperparameters (length‐scale and signal variance).
-#'  \item Rebuild the surrogate function closure with the updated design.
-#' }
-#'
-#' @param boss_result A \code{boss} object with
-#'   \code{essential_design_points} (list with \code{x_original}, \code{y}),
-#'   and containing \code{lower}, \code{upper}, and \code{objective_function}.
-#' @return The updated \code{boss_result}, with fields
-#'   \code{essential_design_points$y}, \code{mode}, \code{mode_hessian},
-#'   \code{gp_params}, and \code{surrogate} refreshed.
-#' @export
-update_boss <- function(boss_result) {
-  ## 1) Fill missing y's
-  ed <- boss_result$essential_design_points
-  nas <- which(is.na(ed$y))
-  if (length(nas) > 0) {
-    for (i in nas) {
-      ed$y[i] <- boss_result$objective_function(ed$x_original[i, ])
-    }
-    boss_result$essential_design_points$y <- ed$y
-  }
-
-  ## 2) Update mode & Hessian based on essential_design_points
-  # Temporarily override design_points to the essential ones
-  old_dp_xo <- boss_result$design_points$x_original
-  old_dp_x  <- boss_result$design_points$x
-  old_dp_y  <- boss_result$design_points$y
-
-  boss_result$design_points$x_original <- ed$x_original
-  # recompute scaled x
-  boss_result$design_points$x <- sweep(ed$x_original, 2,
-                                       boss_result$lower, "-") /
-    (boss_result$upper - boss_result$lower)
-  boss_result$design_points$y <- ed$y
-
-  # update mode and Hessian
-  boss_result <- update_hessian(boss_result)
-
-  ## 3) Re-fit GP hyperparameters on the essential design
-  # use compute_like + optim
-  x_scaled <- boss_result$design_points$x
-  y_centered <- boss_result$design_points$y - mean(boss_result$design_points$y)
-  signal_var <- var(y_centered)
-
-  opt <- optim(runif(1, 0.01, 0.99), function(l)
-    compute_like(length_scale = l, y = y_centered, x = x_scaled, D = boss_result$D,
-                 nu = boss_result$gp_params$nu, quad = boss_result$quad,
-                 signal_var = signal_var, noise_var = boss_result$noise_var),
-    control = list(maxit = 1000), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-
-  length_scale <- opt$par
-  boss_result$gp_params$length_scale <- length_scale
-  boss_result$gp_params$signal_var   <- signal_var
-
-  ## 4) Rebuild surrogate closure
-  boss_result$surrogate <- function(xnew) {
-    xnew_transformed <- (xnew - boss_result$lower)/
-      (boss_result$upper - boss_result$lower)
-    predict_gp(data        = list(x = boss_result$essential_design_points$x,
-                                  y = boss_result$essential_design_points$y - mean(boss_result$essential_design_points$y)),
-               x_pred      = matrix(xnew_transformed, ncol = boss_result$D),
-               choice_cov  = cov_generator(
-                 length_scale = boss_result$gp_params$length_scale,
-                 nu = boss_result$gp_params$nu,
-                 signal_var   = boss_result$gp_params$signal_var),
-               noise_var   = boss_result$noise_var,
-               quad        = boss_result$quad)$mean + mean(boss_result$essential_design_points$y)
-  }
-
-  ## restore original design_points
-  boss_result$design_points$x_original <- old_dp_xo
-  boss_result$design_points$x          <- old_dp_x
-  boss_result$design_points$y          <- old_dp_y
-
-  return(boss_result)
-}
-
-
-#' Update a \code{boss} Object After Adding New Essential Design Points
+#' Update a \code{boss} Object After Adding New Essential Fill-in Design Points
 #'
 #' Given a \code{boss} object that already has an \code{essential_design_points} list,
 #' this function does the following:
@@ -347,7 +260,6 @@ update_boss <- function(boss_result) {
 #'         using precomputed posterior weights (and GLS mean model if \code{quad=TRUE}).
 #' }
 #'
-#' This avoids re-solving the full GP system for every prediction.
 #'
 #' @param boss_result A \code{boss} object with fields:
 #'   \describe{
@@ -366,7 +278,7 @@ update_boss <- function(boss_result) {
 #'   }
 #'
 #' @export
-update_boss_faster <- function(boss_result) {
+update_boss <- function(boss_result) {
   ## 1) Fill missing y's in essential_design_points
   ed <- boss_result$essential_design_points
   nas <- which(is.na(ed$y))
@@ -392,7 +304,6 @@ update_boss_faster <- function(boss_result) {
   ## 4) Refit GP hyperparameters
   x_scaled <- boss_result$design_points$x
   y_obs    <- boss_result$design_points$y - mean(boss_result$design_points$y)
-  signal_var <- var(y_obs)
 
   opt <- optim(
     runif(1, 0.01, 0.99),
@@ -403,13 +314,20 @@ update_boss_faster <- function(boss_result) {
       D = boss_result$D,
       nu = boss_result$gp_params$nu,
       quad = boss_result$quad,
-      signal_var = signal_var,
       noise_var = boss_result$noise_var
     ),
     control = list(maxit = 1000),
     lower = 0.01,
     upper = 0.99,
     method = 'L-BFGS-B'
+  )
+
+  signal_var <- compute_like(
+    length_scale = NULL,
+    y = y_obs,
+    x = x_scaled,
+    D = boss_result$D,
+    quad = boss_result$quad,
   )
 
   boss_result$gp_params$length_scale <- opt$par

@@ -4,16 +4,7 @@
 \alias{compute_like}
 \title{Compute Gaussian Process Log-Likelihood (with Optional Quadratic Mean)}
 \usage{
-compute_like(
-  length_scale,
-  x,
-  y,
-  signal_var,
-  noise_var,
-  D,
-  quad = FALSE,
-  nu = Inf
-)
+compute_like(length_scale = NULL, x, y, noise_var, D, quad = FALSE, nu = Inf)
 }
 \arguments{
 \item{length_scale}{Positive numeric scalar or vector of length-scales for each dimension.}
@@ -21,8 +12,6 @@ compute_like(
 \item{x}{Numeric vector or matrix of training inputs (rows = observations).}
 
 \item{y}{Numeric vector of training responses.}
-
-\item{signal_var}{Positive numeric scalar specifying the GP signal variance (\eqn{\sigma^2}).}
 
 \item{noise_var}{Positive numeric scalar specifying observation noise variance.}
 
@@ -37,7 +26,8 @@ Defaults to \code{Inf}, selecting the Squared Exponential kernel.}
 \value{
 A numeric scalar giving the negative log-likelihood (up to an additive constant).
   Extremely large values (\eqn{10^{20}}) are returned if the computation produces NaN, NA,
-  or infinite results.
+  or infinite results. If \code{length_scale == NULL}, return instead the GP signal variance
+  (\eqn{\sigma^2}) depending on the value of \code{quad} estimated by MLE.
 }
 \description{
 Evaluate the (negative) log-likelihood of observed data under a Gaussian Process

@@ -2,27 +2,36 @@
 % Please edit documentation in R/02_stage2.R
 \name{update_boss}
 \alias{update_boss}
-\title{Update a \code{boss} Object After Filling Essential Design Points}
+\title{Update a \code{boss} Object After Adding New Essential Fill-in Design Points}
 \usage{
 update_boss(boss_result)
 }
 \arguments{
-\item{boss_result}{A \code{boss} object with
-\code{essential_design_points} (list with \code{x_original}, \code{y}),
-and containing \code{lower}, \code{upper}, and \code{objective_function}.}
+\item{boss_result}{A \code{boss} object with fields:
+\describe{
+  \item{\code{essential_design_points}}{List with \code{x_original}, \code{y}, \code{x}.}
+  \item{\code{lower}, \code{upper}}{Bounds for scaling inputs.}
+  \item{\code{objective_function}}{Callable to evaluate new design points.}
+  \item{\code{gp_params}}{Includes \code{noise_var}, \code{nu}, \code{quad} flag, etc.}
+}}
 }
 \value{
-The updated \code{boss_result}, with fields
-  \code{essential_design_points$y}, \code{mode}, \code{mode_hessian},
-  \code{gp_params}, and \code{surrogate} refreshed.
+The updated \code{boss_result}, with:
+  \describe{
+    \item{\code{essential_design_points$y}}{Updated with evaluated values.}
+    \item{\code{mode}, \code{mode_hessian}}{Recomputed for the surrogate.}
+    \item{\code{gp_params}}{Updated hyperparameters.}
+    \item{\code{surrogate}}{A closure for predicting at new inputs.}
+  }
 }
 \description{
-Given a \code{boss_result} with \code{essential_design_points} already constructed,
-this function will:
+Given a \code{boss} object that already has an \code{essential_design_points} list,
+this function does the following:
 \enumerate{
- \item Fill in any missing responses (\code{NA}) by evaluating the objective.
- \item Recompute the mode and Hessian at the mode.
- \item Re‐fit the GP hyperparameters (length‐scale and signal variance).
- \item Rebuild the surrogate function closure with the updated design.
+  \item Fills in any missing \code{NA} responses by evaluating the objective function.
+  \item Recomputes the mode and its Hessian based on the updated design.
+  \item Re-fits the GP hyperparameters (length-scale and signal variance) using MLE.
+  \item Constructs and stores an efficient \code{surrogate} closure for fast prediction,
+        using precomputed posterior weights (and GLS mean model if \code{quad=TRUE}).
 }
 }

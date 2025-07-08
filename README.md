@@ -47,12 +47,12 @@ br2 <- boss(f1d, D = 1,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.55 seconds.
+#> Total time taken: 1.98 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
-#> fill in: added 17 point(s).
-#> Final update completed in  0.02  seconds.
+#> fill in: added 20 point(s).
+#> Final update completed in  0.01  seconds.
 plot(br2)
 ```
 
@@ -71,13 +71,14 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.92 seconds.
+#> Total time taken: 0.77 seconds.
+
 br <- update_hessian(br, approach = "num.obj")
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
 br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
-#> fill in: added 20 point(s).
+#> fill in: added 17 point(s).
 br_update <- update_boss(br)
 plot(br_update)
 ```
@@ -91,6 +92,7 @@ function here is the log-density of a randomly generated bivariate
 Gaussian random variable.
 
 ``` r
+set.seed(1234)
 rho <- runif(1, min = -0.9, 0.9)
 f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), sigma = matrix(c(1,rho, rho, 1), 2, 2), log = T)
 
@@ -100,7 +102,7 @@ br3 <- boss(f2d, D = 2,
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 2.03 seconds.
+#> Total time taken: 2.76 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0.01  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
@@ -109,9 +111,9 @@ br3 <- boss(f2d, D = 2,
 #> achieved.
 #> fill in: added 100 point(s).
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
-#> Updated fill-in distance is (0.511281) > target h (0.100000); Adjust your
+#> Updated fill-in distance is (0.447453) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.07  seconds.
+#> Final update completed in  0.08  seconds.
 plot(br3)
 ```
 
@@ -123,15 +125,15 @@ Similarly, users can also have more modular control over the procedure:
 br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         lower = -c(3,3), upper = c(3,3),
                         initial_design = 10,
-                        quad = TRUE,
+                        quad = F,
                         update_step = 10,
                         max_iter = 100,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 6.43 seconds.
+#> Total time taken: 2.9 seconds.
 
-br3 <- update_hessian(br3, approach = "num.obj")
+br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
 br3 <- construct_essential_designs(br3)
 br3 <- compute_fill_in(br3, n_samples = 100000)
@@ -139,7 +141,7 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Number of points to be added
 #> is greater than max_add. Required h may not be achieved.
 #> Warning in fill_in(br3, h = 0.1, max_add = 100): Updated fill-in distance is
-#> (0.498399) > target h (0.100000); Adjust your expectation by either increasing
+#> (0.444944) > target h (0.100000); Adjust your expectation by either increasing
 #> max_add and n_sample_max or increasing h.
 plot(br3)
 ```
@@ -149,133 +151,4 @@ plot(br3)
 ``` r
 
 br3_update <- update_boss(br3)
-```
-
-## More efficient surrogate
-
-By default, the current functions `update_boss` and `boss_modal`
-construct the `surrogate` function using the function `predict_gp`,
-which implies that each evaluation of the surrogate function requires a
-full matrix inversion of the covariance matrix. This becomes inefficient
-if we want to evaluate the surrogate function at many points.
-
-To improve the efficiency, we can use the `update_boss_faster` function,
-which uses pre-computed factorization of the covariance to define the
-surrogate function. The `surrogate` function updated by
-`update_boss_faster` is much more efficient than the original
-`surrogate` function, especially when the number of design points is
-large.
-
-``` r
-br3_update_faster <- update_boss_faster(br3)
-```
-
-``` r
-br3_update$surrogate(c(1,1))
-#> [1] -3.690905
-br3_update_faster$surrogate(c(1,1))
-#> [1] -3.690905
-```
-
-``` r
-compare_runtime <- microbenchmark::microbenchmark(
-  br3_update$surrogate(c(1,1)),
-  br3_update_faster$surrogate(c(1,1)),
-  unit = 'ms',
-  times = 1000
-)
-#> Warning in microbenchmark::microbenchmark(br3_update$surrogate(c(1, 1)), : less
-#> accurate nanosecond times to avoid potential integer overflows
-
-compare_runtime
-#> Unit: milliseconds
-#>                                  expr      min        lq       mean    median
-#>         br3_update$surrogate(c(1, 1)) 1.557057 1.6839110 1.87278435 1.7136770
-#>  br3_update_faster$surrogate(c(1, 1)) 0.079294 0.0845625 0.08984728 0.0886215
-#>         uq      max neval
-#>  1.7656035 9.504087  1000
-#>  0.0925985 0.159244  1000
-```
-
-## More efficient BO
-
-Each evaluation of the AF also involves computing all the GP-related
-quantities, which can be made more efficient in the same way as above.
-
-``` r
-set.seed(123)
-br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
-                        lower = -c(3,3), upper = c(3,3),
-                        initial_design = 10,
-                        quad = TRUE,
-                        update_step = 10,
-                        max_iter = 100,
-                        verbose = 1)
-#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
-#> Stage 1: BOSS finished.
-#> Total time taken: 5.78 seconds.
-
-set.seed(123)
-br3_v2 <- BOSS:::BOSS_modal_v2(func = f2d, D = 2,
-                        lower = -c(3,3), upper = c(3,3),
-                        initial_design = 10,
-                        quad = TRUE,
-                        update_step = 10,
-                        max_iter = 100,
-                        verbose = 1)
-#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
-#> Stage 1: BOSS finished.
-#> Total time taken: 2.08 seconds.
-```
-
-The two implementation are pragmatically the same in terms of the design
-points queried.
-
-``` r
-mean(abs(br3$design_points$x - br3_v2$design_points$x))
-#> [1] 0.0007069674
-```
-
-``` r
-mean(abs(br3$design_points$y - br3_v2$design_points$y))
-#> [1] 4.741782e-06
-```
-
-Similarly for the 1-D example:
-
-``` r
-set.seed(123)
-br2 <- BOSS:::BOSS_modal(func = f1d, D = 1,
-                        lower = 0, upper = 2,
-                        update_step = 5,
-                        quad = FALSE,
-                        max_iter = 20,
-                        verbose = 1)
-#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
-#> Stage 1: BOSS finished.
-#> Total time taken: 0.65 seconds.
-
-set.seed(123)
-br2_v2 <- BOSS:::BOSS_modal_v2(func = f1d, D = 1,
-                        lower = 0, upper = 2,
-                        update_step = 5,
-                        quad = FALSE,
-                        max_iter = 20,
-                        verbose = 1)
-#> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
-#> Stage 1: BOSS finished.
-#> Total time taken: 0.42 seconds.
-```
-
-Check the two versions of the 1-D BOSS algorithm produce the same design
-points:
-
-``` r
-mean(abs(br2$design_points$x - br2_v2$design_points$x))
-#> [1] 4.132201e-06
-```
-
-``` r
-mean(abs(br2$design_points$y - br2_v2$design_points$y))
-#> [1] 3.651527e-07
 ```

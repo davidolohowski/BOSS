@@ -243,12 +243,12 @@ predict_gp <- function(data,
     cond_var  <- K_pred_pred - crossprod(LK)
 
     # Single sample
-    sim <- MASS::mvrnorm(1, as.vector(cond_mean), cond_var)
+    #sim <- MASS::mvrnorm(1, as.vector(cond_mean), cond_var)
     return(list(
       x    = x_pred,
       mean = as.vector(cond_mean),
-      var  = cond_var,
-      sim  = sim
+      var  = cond_var
+      #sim  = sim
     ))
   } else {
     # GP with quadratic mean
@@ -297,13 +297,13 @@ predict_gp <- function(data,
     cond_var  <- var_part1 + var_part2
 
     # Single sample
-    sim <- MASS::mvrnorm(1, as.vector(cond_mean), cond_var)
+    #sim <- MASS::mvrnorm(1, as.vector(cond_mean), cond_var)
 
     return(list(
       x    = x_pred,
       mean = as.vector(cond_mean),
-      var  = cond_var,
-      sim  = sim
+      var  = cond_var
+      #sim  = sim
     ))
   }
 }
@@ -343,13 +343,19 @@ predict_gp_internal <- function(data,
       quad  = FALSE
     ))
   } else {
-    if(D == 1) {
-      # Design matrix for 1D case
-      Xlin <- cbind(1, x_obs, x_obs^2)
-    } else {
-      # Design matrix for multi-dimensional case
-      Xlin <- cbind(1, x_obs,
-                    t(apply(x_obs, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)])))
+    # Quadratic mean function
+    if(D == 1){
+      Xlin <- cbind(
+        rep(1, nrow(x_obs)),
+        x_obs,
+        x_obs^2
+      )
+    }else{
+      Xlin <- cbind(
+        rep(1, nrow(x_obs)),
+        x_obs,
+        t(apply(x_obs, 1, function(y) ((y %*% t(y))[upper.tri(diag(D), diag = TRUE)])))
+      )
     }
 
     # GLS estimate of beta
@@ -428,18 +434,13 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
       K_pred_pred <- covfn(x_s, x_s)
 
       if (intern$quad) {
-        if (D == 1) {
-          # Quadratic design matrix for new points in 1D
-          X_star <- cbind(1, x_s, x_s^2)
-        } else {
-          # Quadratic design matrix for new points in multi-D
-          X_star <- cbind(
-            1,
-            x_s,
-            t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)]))
-          )
-        }
-        mean_pred <- as.vector(X_star %*% beta + K_obs_pred %*% alpha)
+        # Quadratic design matrix for new points
+        X_star <- cbind(
+          1,
+          x_s,
+          t(apply(x_s, 1, function(x) (x %o% x)[upper.tri(diag(D), TRUE)]))
+        )
+        mean_pred <- as.numeric(X_star %*% beta + K_obs_pred %*% alpha)
 
         # Variance parts
         LK_pred <- forwardsolve(t(L), t(K_obs_pred))
@@ -451,7 +452,7 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
 
         cond_var <- var_part1 + var_part2
       } else {
-        mean_pred <- as.vector(K_obs_pred %*% alpha)
+        mean_pred <- as.numeric(K_obs_pred %*% alpha)
         LK_pred <- forwardsolve(t(L), t(K_obs_pred))
         cond_var <- K_pred_pred - crossprod(LK_pred)
       }
@@ -477,7 +478,6 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
 #' @param length_scale Positive numeric scalar or vector of length-scales for each dimension.
 #' @param x Numeric vector or matrix of training inputs (rows = observations).
 #' @param y Numeric vector of training responses.
-#' @param signal_var Positive numeric scalar specifying the GP signal variance (\eqn{\sigma^2}).
 #' @param noise_var Positive numeric scalar specifying observation noise variance.
 #' @param D Integer. Dimensionality of the input space (number of columns in \code{x}).
 #' @param quad Logical; if \code{FALSE} (default), assume zero-mean GP. If \code{TRUE},
@@ -487,7 +487,8 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
 #'
 #' @return A numeric scalar giving the negative log-likelihood (up to an additive constant).
 #'   Extremely large values (\eqn{10^{20}}) are returned if the computation produces NaN, NA,
-#'   or infinite results.
+#'   or infinite results. If \code{length_scale == NULL}, return instead the GP signal variance
+#'   (\eqn{\sigma^2}) depending on the value of \code{quad} estimated by MLE.
 #'
 #' @details
 #' \textbf{Zero-mean GP} (\code{quad = FALSE}):
@@ -538,30 +539,33 @@ obtain_mean_var_internal <- function(xnew, intern, covfn, D) {
 #' #                        nu   = Inf)
 #'
 #' @export
-compute_like <- function(length_scale, x, y,
-                         signal_var, noise_var,
-                         D,
-                         quad = FALSE, nu = Inf) {
+compute_like <- function(length_scale = NULL, x, y, noise_var,
+                         D, quad = FALSE, nu = Inf) {
   if (!quad) {
-    choice_cov <- cov_generator(length_scale = length_scale,
-                                signal_var   = signal_var,
-                                nu           = nu)
-    C <- choice_cov(x, x)
-    A <- C + noise_var * diag(nrow(x))
-    L <- chol(A)
+    signal_var <- var(y)
+    if(is.null(length_scale)){
+      return(signal_var)
+    }
+    else{
+      choice_cov <- cov_generator(length_scale = length_scale,
+                                  signal_var   = signal_var,
+                                  nu           = nu)
+      C <- choice_cov(x, x)
+      A <- C + noise_var * diag(nrow(x))
+      L <- chol(A)
 
-    # log-det and precision
-    log_det_A <- sum(log(diag(L)))
-    log_det_Q <- -log_det_A
-    Q         <- chol2inv(L)
+      # log-det and precision
+      log_det_A <- sum(log(diag(L)))
+      log_det_Q <- -log_det_A
+      Q         <- chol2inv(L)
 
-    like <- as.numeric((t(y) %*% Q %*% y) / 2
-                       - log_det_Q)
-    if (is.nan(like) || is.na(like)) return(1e20)
-    if (like == -Inf)               return(-1e20)
-    if (like ==  Inf)               return(1e20)
-    return(like)
-
+      like <- as.numeric((t(y) %*% Q %*% y) / 2
+                         - log_det_Q)
+      if (is.nan(like) || is.na(like)) return(1e20)
+      if (like == -Inf)               return(-1e20)
+      if (like ==  Inf)               return(1e20)
+      return(like)
+    }
   } else {
     # design matrix with intercept, linear, and unique quadratic terms
     if(D == 1){
@@ -578,34 +582,43 @@ compute_like <- function(length_scale, x, y,
       )
     }
 
+    # fit the quadratic mean and get residuals
+    fit_quad <- lm(y ~ X_covariate - 1)
+    resids   <- resid(fit_quad)
+    # signal variance is now the variance of those residuals
+    signal_var <- var(resids)
+    if(is.null(length_scale)){
+      return(signal_var)
+    }
+    else{
+      choice_cov <- cov_generator(length_scale = length_scale,
+                                  signal_var   = signal_var,
+                                  nu           = nu)
+      C <- choice_cov(x, x) + noise_var * diag(nrow(x))
 
-    choice_cov <- cov_generator(length_scale = length_scale,
-                                signal_var   = signal_var,
-                                nu           = nu)
-    C <- choice_cov(x, x) + noise_var * diag(nrow(x))
+      # precision and marginal precision S = X^T Q X
+      Lc  <- chol(C)
+      Q   <- chol2inv(Lc)
+      S_mat <- crossprod(X_covariate, Q %*% X_covariate)
+      Ls    <- chol(S_mat)
+      KK    <- chol2inv(Ls)
 
-    # precision and marginal precision S = X^T Q X
-    Lc  <- chol(C)
-    Q   <- chol2inv(Lc)
-    S_mat <- crossprod(X_covariate, Q %*% X_covariate)
-    Ls    <- chol(S_mat)
-    KK    <- chol2inv(Ls)
+      # log-determinants
+      log_det_Q  <- -sum(log(diag(Lc)))
+      log_det_KK <- -sum(log(diag(Ls)))
 
-    # log-determinants
-    log_det_Q  <- -sum(log(diag(Lc)))
-    log_det_KK <- -sum(log(diag(Ls)))
+      # quadratic forms
+      q1 <- as.numeric((t(y) %*% Q %*% y) / 2)
+      q2 <- as.numeric((t(y) %*% Q %*% X_covariate %*% KK %*%
+                          t(X_covariate) %*% Q %*% y) / 2)
 
-    # quadratic forms
-    q1 <- as.numeric((t(y) %*% Q %*% y) / 2)
-    q2 <- as.numeric((t(y) %*% Q %*% X_covariate %*% KK %*%
-                        t(X_covariate) %*% Q %*% y) / 2)
+      like <- q1 - q2 - log_det_Q + log_det_KK
 
-    like <- q1 - q2 - log_det_Q + log_det_KK
-
-    if (is.nan(like) || is.na(like)) return(1e20)
-    if (like == -Inf)               return(-1e20)
-    if (like ==  Inf)               return(1e20)
-    return(like)
+      if (is.nan(like) || is.na(like)) return(1e20)
+      if (like == -Inf)               return(-1e20)
+      if (like ==  Inf)               return(1e20)
+      return(like)
+    }
   }
 }
 
@@ -738,172 +751,3 @@ EXPLORE_internal <- function(x, intern, covfn, nv, D) {
   # Compute the pure exploration acquisition function
   return(as.numeric(-diag(fnew$var)))
 }
-
-
-#' Estimate Hessian at a point based on sattered data
-#'
-#' Estimate the Hessian at a given point \code{x} based on its neighboring scattered design points \code{X} and their evaluations \code{y}
-#' using locally-weighted polynomial regression (moving least squares).
-#'
-#' @param x A numeric vector of length \code{D} specifying the point at which to estimate Hessian.
-#' @param X A \code{nXD} (\eqn{n \geq {D+2\choose 2}}) matrix giving the locations of the neighboring points around \code{x} (It can contain \code{x}).
-#' @param y A numeric vector of length \code{n} giving the function evaluation at \code{X}.
-#' @param bw A positive real number giving the kernel bandwidth for locally weighted polynomial regression. Default to \code{1}.
-#' @param kernel A character string specifying the type of kernel. Should be one of \code{"Epanech"} (Default), \code{"RBF"}, \code{"Tri-cube"}, \code{"Triangular"}.
-#'
-#' @return A \code{DxD} matrix giving an estimate of the Hessian at \code{x}.
-#'
-#' @details
-#' The method performs a weighted least squares fit of a local quadratic polynomial centered at the point \eqn{x}.
-#' The basis consists of all monomials of total degree up to 2:
-#' \deqn{
-#' \phi(z) = [1, z_1, \dots, z_d, z_1^2, z_1 z_2, \dots, z_d^2]^\top
-#' }
-#' where \eqn{z_i = X_i - x_i} is the centered design matrix.
-#'
-#' Kernel weights are computed as:
-#' \deqn{
-#' w_i = K\left(\frac{\|X_i - x\|}{h}\right)
-#' }
-#' where \eqn{K(\cdot)} is the chosen kernel function. Supported kernels include:
-#'
-#' - Epanechnikov (default): \eqn{K(r) = \frac{3}{4}(1 - r^2)_+}
-#'
-#' - RBF: \eqn{K(r) = \exp\left(-\frac{1}{2} r^2\right)}
-#'
-#' - Tri-cube: \eqn{K(r) = (1 - r^3)^3_+}
-#'
-#' - Triangular: \eqn{K(r) = (1 - r)_+}
-#'
-#' The design matrix \eqn{\Phi} is built by evaluating all degree-0, 1, and 2 monomials at each centered design point.
-#'
-#' The weighted normal equations are solved:
-#' \deqn{
-#' \hat{\beta} = (\Phi^\top W \Phi)^{-1} \Phi^\top W y
-#' }
-#' The estimated Hessian matrix is formed by applying second-order derivative operators \eqn{D^\alpha} to the basis at the origin:
-#' \deqn{
-#' H_{ij} = \sum_{k=1}^N y_k \cdot a_k^{(\alpha)}, \quad \text{where } \alpha = e_i + e_j
-#' }
-#' and \eqn{a^{(\alpha)} = W \Phi (\Phi^\top W \Phi)^{-1} D^\alpha \phi(0)}.
-#'
-#' The function ensures that the output matrix \eqn{H} is symmetric by construction.
-#'
-#' @examples
-#' # (Not run)
-#' set.seed(42)
-#' f <- function(x) sin(x[1]) + cos(x[2]) + x[1]*x[2]
-#' X <- matrix(runif(20, -0.1, 0.1), ncol = 2)
-#' y <- apply(X, 1, f)
-#' x0 <- c(0, 0)
-#' H <- estimate_hessian(x0, X, y)
-#' print(H)
-#' H_true <- numDeriv::hessian(f, x0)
-#' print(H_true)
-#' @export
-estimate_hessian <- function(x, X, y, bw = 1, kernel = 'Epanech') {
-  X <- as.matrix(X)
-  x <- as.numeric(x)
-  N <- nrow(X)
-  d <- ncol(X)
-
-  if (N < (d+2)*(d+1)/2) {
-    stop(paste0('There must be at least ', (d+2)*(d+1)/2,
-                ' design points in X for estimation to work.'))
-  }
-
-  # Center design points around x
-  Z <- sweep(X, 2, x)
-
-  if (! kernel %in% c("RBF", "Epanech", "Tri-cube", "Triangular")) {
-    stop('Kernel must be one of "RBF", "Epanech", "Tri-cube", "Triangular"!')
-  } else if (kernel == 'RBF') {
-    kernel <- function(r) exp(-0.5 * r^2)
-  } else if (kernel == 'Epanech') {
-    kernel <- function(r) pmax(0, 3/4 * (1 - r^2))
-  } else if (kernel == 'Tri-cube') {
-    kernel <- function(r) pmax(0, (1 - r^3)^3)
-  } else {
-    kernel <- function(r) pmax(0, 1 - r)
-  }
-
-  # Generate all monomial multi-indices up to degree 2
-  multi_indices <- function(d, deg) {
-    if (deg == 0) return(matrix(0, 1, d))
-    if (d == 1) return(matrix(deg, 1, 1))
-    out <- NULL
-    for (i in 0:deg) {
-      sub <- multi_indices(d - 1, deg - i)
-      out <- rbind(out, cbind(i, sub))
-    }
-    return(out)
-  }
-
-  basis_idx <- do.call(rbind, lapply(0:2, function(k) multi_indices(d, k)))
-  Q <- nrow(basis_idx)
-
-  # Build design matrix Phi (N x Q)
-  Phi <- matrix(0, N, Q)
-  for (i in 1:Q) {
-    exponents <- basis_idx[i, ]
-    if (d == 1) {
-      Phi[, i] <- Z^exponents  # Z is a vector
-    } else {
-      Phi[, i] <- apply(Z^matrix(rep(exponents, each = N), ncol = d), 1, prod)
-    }
-  }
-
-  # Kernel weights
-  r <- sqrt(rowSums(Z^2)) / bw
-  w <- kernel(r)
-  W <- diag(w)
-
-  # Normal matrix
-  XtWX <- t(Phi) %*% W %*% Phi
-  XtWX_inv <- solve(XtWX)
-
-  # Function to compute D^alpha phi(0)
-  derivative_vector <- function(alpha, basis_idx) {
-    sapply(1:nrow(basis_idx), function(i) {
-      beta <- basis_idx[i, ]
-      if (all(beta >= alpha)) {
-        prod(sapply(1:length(alpha), function(j) {
-          if (alpha[j] == 0) return(1)
-          prod(beta[j]:(beta[j] - alpha[j] + 1))
-        }))
-      } else {
-        0
-      }
-    })
-  }
-
-  # Compute Hessian
-  H <- matrix(0, d, d)
-  for (i in 1:d) {
-    for (j in 1:d) {
-      alpha <- integer(d)
-      alpha[i] <- alpha[i] + 1
-      alpha[j] <- alpha[j] + 1
-      D_alpha_phi <- derivative_vector(alpha, basis_idx)
-      a_alpha <- W %*% Phi %*% XtWX_inv %*% D_alpha_phi
-      H[i, j] <- sum(a_alpha * y)
-    }
-  }
-
-  # Enforce symmetry if d > 1
-  if (d > 1) {
-    for (i in 1:(d - 1)) {
-      for (j in (i + 1):d) {
-        avg <- (H[i, j] + H[j, i]) / 2
-        H[i, j] <- avg
-        H[j, i] <- avg
-      }
-    }
-  }
-
-  return(H)
-}
-
-
-
-

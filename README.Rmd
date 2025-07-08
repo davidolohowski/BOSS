@@ -61,6 +61,7 @@ br <- BOSS:::BOSS_modal(func = f1d, D = 1,
                         quad = FALSE,
                         max_iter = 20,
                         verbose = 1)
+
 br <- update_hessian(br, approach = "num.obj")
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
@@ -75,6 +76,7 @@ plot(br_update)
 Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of a randomly generated bivariate Gaussian random variable.
 
 ```{r exmple2d}
+set.seed(1234)
 rho <- runif(1, min = -0.9, 0.9)
 f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), sigma = matrix(c(1,rho, rho, 1), 2, 2), log = T)
 
@@ -91,12 +93,12 @@ Similarly, users can also have more modular control over the procedure:
 br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
                         lower = -c(3,3), upper = c(3,3),
                         initial_design = 10,
-                        quad = TRUE,
+                        quad = F,
                         update_step = 10,
                         max_iter = 100,
                         verbose = 1)
 
-br3 <- update_hessian(br3, approach = "num.obj")
+br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
 br3 <- construct_essential_designs(br3)
 br3 <- compute_fill_in(br3, n_samples = 100000)
@@ -105,103 +107,4 @@ plot(br3)
 
 br3_update <- update_boss(br3)
 ```
-
-
-
-## More efficient surrogate
-
-By default, the current functions `update_boss` and `boss_modal` construct the `surrogate` function using the function `predict_gp`, which implies that each evaluation of the surrogate function requires a full matrix inversion of the covariance matrix. 
-This becomes inefficient if we want to evaluate the surrogate function at many points.
-
-To improve the efficiency, we can use the `update_boss_faster` function, which uses pre-computed factorization of the covariance to define the surrogate function.
-The `surrogate` function updated by `update_boss_faster` is much more efficient than the original `surrogate` function, especially when the number of design points is large.
-
-```{r}
-br3_update_faster <- update_boss_faster(br3)
-```
-
-```{r}
-br3_update$surrogate(c(1,1))
-br3_update_faster$surrogate(c(1,1))
-```
-
-
-```{r}
-compare_runtime <- microbenchmark::microbenchmark(
-  br3_update$surrogate(c(1,1)),
-  br3_update_faster$surrogate(c(1,1)),
-  unit = 'ms',
-  times = 1000
-)
-
-compare_runtime
-```
-
-
-## More efficient BO
-
-Each evaluation of the AF also involves computing all the GP-related quantities, which can be made more efficient in the same way as above.
-
-```{r}
-set.seed(123)
-br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
-                        lower = -c(3,3), upper = c(3,3),
-                        initial_design = 10,
-                        quad = TRUE,
-                        update_step = 10,
-                        max_iter = 100,
-                        verbose = 1)
-
-set.seed(123)
-br3_v2 <- BOSS:::BOSS_modal_v2(func = f2d, D = 2,
-                        lower = -c(3,3), upper = c(3,3),
-                        initial_design = 10,
-                        quad = TRUE,
-                        update_step = 10,
-                        max_iter = 100,
-                        verbose = 1)
-```
-
-
-The two implementation are pragmatically the same in terms of the design points queried.
-
-```{r}
-mean(abs(br3$design_points$x - br3_v2$design_points$x))
-```
-
-```{r}
-mean(abs(br3$design_points$y - br3_v2$design_points$y))
-```
-
-Similarly for the 1-D example:
-
-
-```{r}
-set.seed(123)
-br2 <- BOSS:::BOSS_modal(func = f1d, D = 1,
-                        lower = 0, upper = 2,
-                        update_step = 5,
-                        quad = FALSE,
-                        max_iter = 20,
-                        verbose = 1)
-
-set.seed(123)
-br2_v2 <- BOSS:::BOSS_modal_v2(func = f1d, D = 1,
-                        lower = 0, upper = 2,
-                        update_step = 5,
-                        quad = FALSE,
-                        max_iter = 20,
-                        verbose = 1)
-```
-
-Check the two versions of the 1-D BOSS algorithm produce the same design points:
-
-```{r}
-mean(abs(br2$design_points$x - br2_v2$design_points$x))
-```
-
-```{r}
-mean(abs(br2$design_points$y - br2_v2$design_points$y))
-```
-
 
