@@ -886,10 +886,10 @@ adaptive_MCMC_internal <- function(N_sample = 15000, D, BO_surrogate, start_poin
 #' Adaptive MCMC sampler to sample from the posterior distribution of the GP surrogate (on \code{[0,1]^D} scale).
 #' It assumes the surrogate is constructed for the entire posterior, not just the likelihood.
 #'
-#' @param boss_result A \code{boss_modal} or a \code{boss_mcmc} object.
+#' @param boss_result A \code{boss} object.
 #' @param N_sample Integer. Number of MCMC sample to generate
 #'
-#' @return @return A matrix of size \code{N_sample x D} which is a MCMC sample obtained based on the GP surrogate \code{boss_result$surrogate}.
+#' @return A matrix of size \code{N_sample x D} which is a MCMC sample obtained based on the GP surrogate \code{boss_result$surrogate}.
 #' @export
 adaptive_MCMC <- function(boss_result, N_sample = 15000){
   D <- boss_result$D

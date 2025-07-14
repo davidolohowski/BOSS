@@ -7,12 +7,12 @@
 adaptive_MCMC(boss_result, N_sample = 15000)
 }
 \arguments{
-\item{boss_result}{A \code{boss_modal} or a \code{boss_mcmc} object.}
+\item{boss_result}{A \code{boss} object.}
 
 \item{N_sample}{Integer. Number of MCMC sample to generate}
 }
 \value{
-@return A matrix of size \code{N_sample x D} which is a MCMC sample obtained based on the GP surrogate \code{boss_result$surrogate}.
+A matrix of size \code{N_sample x D} which is a MCMC sample obtained based on the GP surrogate \code{boss_result$surrogate}.
 }
 \description{
 Adaptive MCMC sampler to sample from the posterior distribution of the GP surrogate (on \code{[0,1]^D} scale).

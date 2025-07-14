@@ -7,10 +7,9 @@
 fill_in(boss_result, h, max_add = 100, n_sample_max = 10000, verbose = 0)
 }
 \arguments{
-\item{boss_result}{A \code{boss_modal} object with non-NULL
+\item{boss_result}{A \code{boss} object with non-NULL
 \code{essential_support}, \code{essential_design_points$x_original}
-and containing \code{lower} and \code{upper},
-or a \code{boss_mcmc} with non-NULL \code{essential_design_points$x_original} and containing \code{essential_support}.}
+and containing \code{lower} and \code{upper}.}
 
 \item{h}{Numeric; target fill-in distance (>= 0).}
 
@@ -25,7 +24,7 @@ The updated \code{boss_result}, with its
   \code{essential_design_points} and \code{fill_in} refreshed.
 }
 \description{
-Given a \code{boss_modal} or a \code{boss_mcmc} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
+Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
 approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 \enumerate{
 \item Based on the required fill-in distance \code{h}, estimate the required number of quasi-uniform design points by

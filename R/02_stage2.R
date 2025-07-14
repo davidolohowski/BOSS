@@ -1,6 +1,6 @@
-#' Extract Design Points within the essential support for a \code{boss_modal} or a \code{boss_mcmc} Object
+#' Extract Design Points within the essential support for a \code{boss} Object
 #'
-#' Given a \code{boss_modal} or a \code{boss_mcmc} object with \code{essential_support} computed (in original input space),
+#' Given a \code{boss} object with \code{essential_support} computed (in original input space),
 #' builds \code{essential_design_points} that contains all design points inside the essential support
 #'
 #' @param boss_result A \code{boss} object containing non-NULL
@@ -91,10 +91,9 @@ construct_essential_designs <- function(boss_result) {
 #' \item Taking the maximum of these minima.
 #' }
 #'
-#' @param boss_result A \code{boss_modal} object with non-NULL
+#' @param boss_result A \code{boss} object with non-NULL
 #'   \code{essential_support}, \code{essential_design_points$x_original}
-#'   and containing \code{lower} and \code{upper},
-#'   or a \code{boss_mcmc} with non-NULL \code{essential_design_points$x_original} and containing \code{essential_support}.
+#'   and containing \code{lower} and \code{upper}.
 #' @param n_samples Integer; number of unifrom samples in the essential support to estimate the fill-in (default 10000).
 #'
 #' @return The input \code{boss_result}, with \code{fill_in} updated.
@@ -168,7 +167,7 @@ compute_fill_in <- function(boss_result, n_samples = 10000) {
 
 #' Fill-in essential support with a Sobol-sequence
 #'
-#' Given a \code{boss_modal} or a \code{boss_mcmc} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
+#' Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
 #' approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 #' \enumerate{
 #' \item Based on the required fill-in distance \code{h}, estimate the required number of quasi-uniform design points by
@@ -186,10 +185,9 @@ compute_fill_in <- function(boss_result, n_samples = 10000) {
 #' If the candidate pool is over \code{max_add}, or if \code{fill_in} cannot be reduced below \code{h},
 #' a warning is issued.
 #'
-#' @param boss_result A \code{boss_modal} object with non-NULL
+#' @param boss_result A \code{boss} object with non-NULL
 #'   \code{essential_support}, \code{essential_design_points$x_original}
-#'   and containing \code{lower} and \code{upper},
-#'   or a \code{boss_mcmc} with non-NULL \code{essential_design_points$x_original} and containing \code{essential_support}.
+#'   and containing \code{lower} and \code{upper}.
 #' @param h Numeric; target fill-in distance (>= 0).
 #' @param max_add Integer; maximum number of points to add (default 100).
 #' @param n_sample_max Integer; maximum number of Sobol-sequence candidates to be added (default 10000).
@@ -325,7 +323,7 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 #' }
 #'
 #'
-#' @param boss_result A \code{boss_modal} or a \code{boss_mcmc} object with fields:
+#' @param boss_result A \code{boss} object with fields:
 #'   \describe{
 #'     \item{\code{essential_design_points}}{List with \code{x_original}, \code{y}, \code{x}.}
 #'     \item{\code{lower}, \code{upper}}{Bounds for scaling inputs.}

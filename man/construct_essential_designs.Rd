@@ -2,7 +2,7 @@
 % Please edit documentation in R/02_stage2.R
 \name{construct_essential_designs}
 \alias{construct_essential_designs}
-\title{Extract Design Points within the essential support for a \code{boss_modal} or a \code{boss_mcmc} Object}
+\title{Extract Design Points within the essential support for a \code{boss} Object}
 \usage{
 construct_essential_designs(boss_result)
 }
@@ -20,6 +20,6 @@ The same \code{boss_result}, with
   }
 }
 \description{
-Given a \code{boss_modal} or a \code{boss_mcmc} object with \code{essential_support} computed (in original input space),
+Given a \code{boss} object with \code{essential_support} computed (in original input space),
 builds \code{essential_design_points} that contains all design points inside the essential support
 }

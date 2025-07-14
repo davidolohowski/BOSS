@@ -73,7 +73,7 @@ If \code{TRUE}, fit a linear-plus-quadratic mean model
 \item{verbose}{Verbosity level (0–3).}
 }
 \value{
-A "boss_modal" object (S3 class \code{boss_modal}), which is a list containing:
+A BOSS object with subclass "boss_modal" (S3 class \code{boss_modal} and \code{boss}), which is a list containing:
   \describe{
     \item{\code{objective_function}}{The original objective function \code{f}.}
     \item{\code{D}}{Input dimension of the objective function.}

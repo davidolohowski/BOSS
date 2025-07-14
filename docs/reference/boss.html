@@ -6,13 +6,13 @@
     }
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Two‐Stage BOSS Wrapper — boss"><meta name="description" content="Runs the full two‐stage BOSS procedure:
-  1) Bayesian sequential design via BOSS_modal(),
-  2) Hessian update at the mode,
+  1) Bayesian sequential design via BOSS_modal() or BOSS_mcmc() (in development),
+  2) Hessian update at the mode (only for BOSS_modal()),
   3) Essential‐support extraction and initial fill‐in,
   4) Approximate fill‐in to a target spacing,
   5) Final update of mode, Hessian, GP hyperparameters, and surrogate."><meta property="og:description" content="Runs the full two‐stage BOSS procedure:
-  1) Bayesian sequential design via BOSS_modal(),
-  2) Hessian update at the mode,
+  1) Bayesian sequential design via BOSS_modal() or BOSS_mcmc() (in development),
+  2) Hessian update at the mode (only for BOSS_modal()),
   3) Essential‐support extraction and initial fill‐in,
   4) Approximate fill‐in to a target spacing,
   5) Final update of mode, Hessian, GP hyperparameters, and surrogate."></head><body>
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.28</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,8 +49,8 @@
 
     <div class="ref-description section level2">
     <p>Runs the full two‐stage BOSS procedure:
-  1) Bayesian sequential design via <code><a href="BOSS_modal.html">BOSS_modal()</a></code>,
-  2) Hessian update at the mode,
+  1) Bayesian sequential design via <code><a href="BOSS_modal.html">BOSS_modal()</a></code> or <code><a href="BOSS_mcmc.html">BOSS_mcmc()</a></code> (in development),
+  2) Hessian update at the mode (only for <code><a href="BOSS_modal.html">BOSS_modal()</a></code>),
   3) Essential‐support extraction and initial fill‐in,
   4) Approximate fill‐in to a target spacing,
   5) Final update of mode, Hessian, GP hyperparameters, and surrogate.</p>
@@ -137,7 +137,7 @@ for <code><a href="compute_fill_in.html">compute_fill_in()</a></code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A fully‐updated S3 <code>boss</code> object.</p>
+    <p>A fully‐updated S3 <code>boss</code> object with subclass being <code>boss_modal</code> or <code>boss_mcmc</code> depending on the argument of <code>method</code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

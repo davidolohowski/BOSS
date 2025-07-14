@@ -32,7 +32,7 @@
 #' @param opt.grid Optional grid size for acquisition search.
 #' @param verbose Verbosity level (0–3).
 #'
-#' @return A "boss_modal" object (S3 class \code{boss_modal}), which is a list containing:
+#' @return A BOSS object with subclass "boss_modal" (S3 class \code{boss_modal} and \code{boss}), which is a list containing:
 #'   \describe{
 #'     \item{\code{objective_function}}{The original objective function \code{f}.}
 #'     \item{\code{D}}{Input dimension of the objective function.}
@@ -340,7 +340,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
     essential_support = NULL,  # This will be computed in the next stage.
     fill_in = NULL, # This will be computed in the next stage.
     modal_result = modal_result),
-    class = "boss_modal")
+    class = c("boss_modal", "boss"))
 
   return(boss_result)
 }
@@ -383,7 +383,7 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
 #' @param UCB_prob Numeric; probability threshold to indicate the modal convergence from UCB. Default to \code{UCB_prob < 0.1}.
 #' @param verbose Verbosity level (0–3).
 #'
-#' @return A "boss_mcmc" object (S3 class \code{boss_mcmc}), which is a list containing:
+#' @return A BOSS object with subclass "boss_mcmc" (S3 class \code{boss_mcmc} and \code{boss}), which is a list containing:
 #'   \describe{
 #'     \item{\code{objective_function}}{The original objective function \code{f}.}
 #'     \item{\code{D}}{Input dimension of the objective function.}
@@ -793,7 +793,7 @@ BOSS_mcmc <- function(func,
     fill_in = NULL, # This will be computed in the next stage.
     mcmc_result = list(sample = MCMC_sample, R_hat = mcmc_result),
     modal_result = modal_result),
-    class = "boss_mcmc")
+    class = c("boss_mcmc", 'boss'))
 
   return(boss_result)
 }

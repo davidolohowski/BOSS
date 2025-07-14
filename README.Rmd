@@ -45,11 +45,11 @@ The `alpha` parameter controls the level of the essential support, while `h` con
 
 ```{r}
 # A automatic implementation
-br2 <- boss(f1d, D = 1, method = 'modal',
+br <- boss(f1d, D = 1, method = 'modal',
             modal_opts = list(lower = 0, upper = 2),
             alpha = 0.05, h = 0.1, verbose = 1)
 
-plot(br2)
+plot(br)
 ```
 
 
@@ -85,7 +85,7 @@ f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), sigma = matrix(c(1,rho, rho, 1)
 br3 <- boss(f2d, D = 2, method = 'modal',
             modal_opts = list(lower = -c(3,3), upper = c(3,3)),
             alpha = 0.05, h = 0.1, verbose = 1)
-plot.boss(br3)
+plot(br3)
 
 f2d(c(1,1))
 br3$surrogate(c(1,1))

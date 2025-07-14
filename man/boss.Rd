@@ -56,12 +56,12 @@ for \code{compute_fill_in()}.}
 \item{verbose}{Integer 0–3; for progress.}
 }
 \value{
-A fully‐updated S3 \code{boss} object.
+A fully‐updated S3 \code{boss} object with subclass being \code{boss_modal} or \code{boss_mcmc} depending on the argument of \code{method}.
 }
 \description{
 Runs the full two‐stage BOSS procedure:
-  1) Bayesian sequential design via \code{BOSS_modal()},
-  2) Hessian update at the mode,
+  1) Bayesian sequential design via \code{BOSS_modal()} or \code{BOSS_mcmc()} (in development),
+  2) Hessian update at the mode (only for \code{BOSS_modal()}),
   3) Essential‐support extraction and initial fill‐in,
   4) Approximate fill‐in to a target spacing,
   5) Final update of mode, Hessian, GP hyperparameters, and surrogate.

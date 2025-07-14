@@ -7,10 +7,9 @@
 compute_fill_in(boss_result, n_samples = 10000)
 }
 \arguments{
-\item{boss_result}{A \code{boss_modal} object with non-NULL
+\item{boss_result}{A \code{boss} object with non-NULL
 \code{essential_support}, \code{essential_design_points$x_original}
-and containing \code{lower} and \code{upper},
-or a \code{boss_mcmc} with non-NULL \code{essential_design_points$x_original} and containing \code{essential_support}.}
+and containing \code{lower} and \code{upper}.}
 
 \item{n_samples}{Integer; number of unifrom samples in the essential support to estimate the fill-in (default 10000).}
 }

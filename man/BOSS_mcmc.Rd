@@ -80,7 +80,7 @@ Default to \code{Rhat_eps = 0.01} to represent a stopping criterion of \eqn{\hat
 \item{verbose}{Verbosity level (0–3).}
 }
 \value{
-A "boss_mcmc" object (S3 class \code{boss_mcmc}), which is a list containing:
+A BOSS object with subclass "boss_mcmc" (S3 class \code{boss_mcmc} and \code{boss}), which is a list containing:
   \describe{
     \item{\code{objective_function}}{The original objective function \code{f}.}
     \item{\code{D}}{Input dimension of the objective function.}
