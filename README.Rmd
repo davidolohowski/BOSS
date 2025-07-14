@@ -46,9 +46,10 @@ The `alpha` parameter controls the level of the essential support, while `h` con
 
 ```{r}
 # A automatic implementation
-br2 <- boss(f1d, D = 1, 
+br2 <- boss(f1d, D = 1, method = 'modal',
             modal_opts = list(lower = 0, upper = 2),
             alpha = 0.05, h = 0.1, verbose = 1)
+
 plot(br2)
 ```
 
@@ -56,7 +57,7 @@ plot(br2)
 For more advanced applications, the user can also manually perform each step of the BOSS algorithm, as shown below:
 ```{r}
 # A manual implementation
-br <- BOSS:::BOSS_modal(func = f1d, D = 1,
+br <- BOSS_modal(func = f1d, D = 1,
                         lower = 0, upper = 2,
                         update_step = 5,
                         quad = FALSE,
@@ -82,26 +83,25 @@ rho <- runif(1, min = -0.9, 0.9)
 f2d <- function(x) mvtnorm::dmvnorm(x, rep(0,2), sigma = matrix(c(1,rho, rho, 1), 2, 2), log = T)
 
 # A automatic implementation
-br3 <- boss(f2d, D = 2, 
+br3 <- boss(f2d, D = 2, method = 'modal',
             modal_opts = list(lower = -c(3,3), upper = c(3,3)),
             alpha = 0.05, h = 0.1, verbose = 1)
-plot(br3)
+plot.boss(br3)
 
-br3$surrogate(c(1,2))
+f2d(c(1,1))
+br3$surrogate(c(1,1))
 ```
 
 Similarly, users can also have more modular control over the procedure:
 
 ```{r}
-br3 <- BOSS:::BOSS_modal(func = f2d, D = 2,
+br3 <- BOSS_modal(func = f2d, D = 2,
                         lower = -c(3,3), upper = c(3,3),
                         initial_design = 10,
                         quad = F,
                         update_step = 10,
                         max_iter = 100,
                         verbose = 1)
-br3$surrogate(c(1,2))
-
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -111,6 +111,6 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 plot(br3)
 
 br3_update <- update_boss(br3)
-br3_update$surrogate(c(1,2))
+br3_update$surrogate(c(1,1))
 ```
 

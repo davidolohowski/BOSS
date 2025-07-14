@@ -6,24 +6,45 @@
 #' @param ... Additional arguments (ignored).
 #' @export
 print.boss <- function(x, ...) {
-  cat("Fitted BOSS Object\n")
-  cat(strrep("-", 20), "\n")
-  cat("Dimension of the parameter space: ", x$D, "\n")
-  cat("Total number of design points placed in the first stage: ",
-      nrow(x$design_points$x_original), "\n")
-  if (!is.null(x$essential_design_points$x_original)) {
-    cat("Final number of design points after the second stage: ",
-        nrow(x$essential_design_points$x_original), "\n")
+  if(inherits(x, 'boss_modal')){
+    cat("Fitted boss_modal Object\n")
+    cat(strrep("-", 20), "\n")
+    cat("Dimension of the parameter space: ", x$D, "\n")
+    cat("Total number of design points placed in the first stage: ",
+        nrow(x$design_points$x_original), "\n")
+    if (!is.null(x$essential_design_points$x_original)) {
+      cat("Final number of design points after the second stage: ",
+          nrow(x$essential_design_points$x_original), "\n")
+    }
+    fi <- if (!is.null(x$fill_in)) signif(x$fill_in, 6) else "NA"
+    cat("Final fill-in distance:                 ", fi, "\n")
+    mode_pt <- if (!is.null(x$mode)) {
+      paste(signif(x$mode, 6), collapse = ", ")
+    } else {
+      "NA"
+    }
+    cat("Current mode of parameters:  ", mode_pt, "\n")
+    invisible(x)
   }
-  fi <- if (!is.null(x$fill_in)) signif(x$fill_in, 6) else "NA"
-  cat("Final fill-in distance:                 ", fi, "\n")
-  mode_pt <- if (!is.null(x$mode)) {
-    paste(signif(x$mode, 6), collapse = ", ")
-  } else {
-    "NA"
+  else{
+    cat("Fitted boss_mcmc Object\n")
+    cat(strrep("-", 20), "\n")
+    cat("Dimension of the parameter space: ", x$D, "\n")
+    cat("Total number of design points placed in the first stage: ",
+        nrow(x$design_points$x_original), "\n")
+    if (!is.null(x$essential_design_points$x_original)) {
+      cat("Final number of design points after the second stage: ",
+          nrow(x$essential_design_points$x_original), "\n")
+    }
+    fi <- if (!is.null(x$fill_in)) signif(x$fill_in, 6) else "NA"
+    cat("Final fill-in distance:                 ", fi, "\n")
+    mode_pt <- if (!is.null(x$mode)) {
+      paste(signif(x$mode, 6), collapse = ", ")
+    } else {
+      "NA"
+    }
+    invisible(x)
   }
-  cat("Current mode of the conditioning param:  ", mode_pt, "\n")
-  invisible(x)
 }
 
 
@@ -63,7 +84,7 @@ summary.boss <- function(object, ...) {
   ## 3) Essential support
   cat("3) Essential support:\n")
   cat("   - Total points in support:           ", n_ess, "\n")
-  if (!is.null(object$essential_support)) {
+  if (!is.null(object$essential_support) & inherits(object, 'boss_modal')) {
     es    <- object$essential_support
     eigs  <- es$eig_values
     radii <- sqrt(es$chi2_radius / abs(eigs))
@@ -72,13 +93,21 @@ summary.boss <- function(object, ...) {
     cat("   - Minor axis length:                ", minor, "\n")
     cat("   - Major axis length:                ", major, "\n\n")
   }
+  else if(!is.null(object$essential_support)){
+    es <- object$essential_support
+    lower <- es$lower
+    upper <- es$upper
+    cat("   - Lower bound:                ", lower, "\n")
+    cat("   - Upper bound:                ", upper, "\n\n")
+  }
 
   ## 4) Inferred mode
-  cat("4) Inferred mode:\n")
-  if (!is.null(object$mode)) {
+  if (!is.null(object$mode) & inherits(object, 'boss_modal')) {
+    cat("4) Inferred mode:\n")
     mode_pt <- paste(signif(object$mode, 6), collapse = ", ")
     cat("   - Mode location in input space:      ", mode_pt, "\n")
-  } else {
+  } else if (inherits(object, 'boss_modal')){
+    cat("4) Inferred mode:\n")
     cat("   - Mode location:                     NA\n")
   }
 
@@ -137,47 +166,81 @@ plot.boss <- function(x,
   ## 2) Essential-support schematic
   if (ask) readline("Press <Enter> to see essential-support plot...")
 
-  es     <- x$essential_support
-  center <- es$center
-  cval   <- es$chi2_radius
+  if(inherits(x, 'boss_modal')){
 
-  if (length(center) == 1) {
-    # 1D support interval
-    H11    <- as.numeric(-es$H)
-    radius <- if (H11 > 0) sqrt(cval / H11) else NA_real_
-    left   <- center - radius
-    right  <- center + radius
+    es     <- x$essential_support
+    center <- es$center
+    cval   <- es$chi2_radius
 
-    plot(c(left, right), c(0, 0), type = "n", yaxt = "n",
-         xlab = "x", ylab = "", main = "Essential Support & Points")
-    segments(x0 = left, y0 = 0, x1 = right, y1 = 0, lwd = 3)
-    points(center, 0, pch = 19)
-    text(center, 0, "center", pos = 3)
+    if (length(center) == 1) {
+      # 1D support interval
+      H11    <- as.numeric(-es$H)
+      radius <- if (H11 > 0) sqrt(cval / H11) else NA_real_
+      left   <- center - radius
+      right  <- center + radius
 
-    ed_x <- x$essential_design_points$x_original
-    tick_h <- 0.1
-    for (xi in ed_x) {
-      segments(x0 = xi, y0 = -tick_h, x1 = xi, y1 = tick_h,
-               col = "blue", lwd = 2)
+      plot(c(left, right), c(0, 0), type = "n", yaxt = "n",
+           xlab = "x", ylab = "", main = "Essential Support & Points")
+      segments(x0 = left, y0 = 0, x1 = right, y1 = 0, lwd = 3)
+      points(center, 0, pch = 19)
+      text(center, 0, "center", pos = 3)
+
+      ed_x <- x$essential_design_points$x_original
+      tick_h <- 0.1
+      for (xi in ed_x) {
+        segments(x0 = xi, y0 = -tick_h, x1 = xi, y1 = tick_h,
+                 col = "blue", lwd = 2)
+      }
+
+    } else if (length(center) == 2) {
+      # 2D ellipse
+      pts <- x$essential_design_points$x_original
+      xlim <- range(pts[,1]); ylim <- range(pts[,2])
+      plot(NA, xlim = xlim, ylim = ylim,
+           xlab = "x1", ylab = "x2", main = "Essential Support & Points")
+      points(pts, pch = 16)
+      eig   <- eigen(es$H)
+      vecs  <- eig$vectors; vals <- abs(eig$values)
+      radii <- sqrt(cval / vals)
+      angles <- seq(0, 2*pi, len = 200)
+      unit   <- rbind(cos(angles), sin(angles))
+      boundary <- t(vecs %*% diag(radii) %*% unit + center)
+      lines(boundary, col = "red", lwd = 2)
+
+    } else {
+      warning("Essential-support plot only implemented for D=1 or D=2")
     }
+  }
+  else{
+    es     <- x$essential_support
+    lower  <- es$lower
+    upper  <- es$upper
 
-  } else if (length(center) == 2) {
-    # 2D ellipse
-    pts <- x$essential_design_points$x_original
-    xlim <- range(pts[,1]); ylim <- range(pts[,2])
-    plot(NA, xlim = xlim, ylim = ylim,
-         xlab = "x1", ylab = "x2", main = "Essential Support & Points")
-    points(pts, pch = 16)
-    eig   <- eigen(es$H)
-    vecs  <- eig$vectors; vals <- abs(eig$values)
-    radii <- sqrt(cval / vals)
-    angles <- seq(0, 2*pi, len = 200)
-    unit   <- rbind(cos(angles), sin(angles))
-    boundary <- t(vecs %*% diag(radii) %*% unit + center)
-    lines(boundary, col = "red", lwd = 2)
+    if (length(lower) == 1) {
 
-  } else {
-    warning("Essential-support plot only implemented for D=1 or D=2")
+      plot(c(left, right), c(0, 0), type = "n", yaxt = "n",
+           xlab = "x", ylab = "", main = "Essential Support & Points")
+      segments(x0 = left, y0 = 0, x1 = right, y1 = 0, lwd = 3)
+
+      ed_x <- x$essential_design_points$x_original
+      tick_h <- 0.1
+      for (xi in ed_x) {
+        segments(x0 = xi, y0 = -tick_h, x1 = xi, y1 = tick_h,
+                 col = "blue", lwd = 2)
+      }
+
+    } else if (length(lower) == 2) {
+      # 2D ellipse
+      pts <- x$essential_design_points$x_original
+      xlim <- c(lower[1], upper[1])
+      ylim <- c(lower[2], upper[2])
+      plot(NA, xlim = xlim, ylim = ylim,
+           xlab = "x1", ylab = "x2", main = "Essential Support & Points")
+      points(pts, pch = 16)
+
+    } else {
+      warning("Essential-support plot only implemented for D=1 or D=2")
+    }
   }
 
   invisible(NULL)

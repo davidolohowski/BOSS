@@ -2,7 +2,7 @@
 % Please edit documentation in R/01_stage1.R
 \name{update_hessian}
 \alias{update_hessian}
-\title{Update Mode Hessian for a \code{boss} Object (with PSD check)}
+\title{Update Mode Hessian for a \code{boss_modal} Object (with PSD check)}
 \usage{
 update_hessian(
   boss_result,
@@ -14,7 +14,7 @@ update_hessian(
 )
 }
 \arguments{
-\item{boss_result}{A S3 \code{boss} object returned by \code{BOSS_modal()}, which must
+\item{boss_result}{A S3 \code{boss_modal} object returned by \code{BOSS_modal()}, which must
 contain \code{design_points$x_original} and \code{objective_function}.}
 
 \item{approach}{Character string specifying the method used for estimating the Hessian at the BO mode.

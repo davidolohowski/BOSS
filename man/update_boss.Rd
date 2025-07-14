@@ -7,7 +7,7 @@
 update_boss(boss_result)
 }
 \arguments{
-\item{boss_result}{A \code{boss} object with fields:
+\item{boss_result}{A \code{boss_modal} or a \code{boss_mcmc} object with fields:
 \describe{
   \item{\code{essential_design_points}}{List with \code{x_original}, \code{y}, \code{x}.}
   \item{\code{lower}, \code{upper}}{Bounds for scaling inputs.}

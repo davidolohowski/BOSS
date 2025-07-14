@@ -9,7 +9,9 @@ boss(
   D,
   alpha = 0.05,
   h = 0.1,
+  method = c("modal", "mcmc"),
   modal_opts = list(),
+  mcmc_opts = list(),
   hess_opts = list(),
   essup_opts = list(),
   fillin_opts = list(),
@@ -21,10 +23,12 @@ boss(
 
 \item{D}{Integer; input dimension.}
 
-\item{alpha}{Numeric in [0,1], significance level (default 0.05) for the chi-squared cutoff.
+\item{alpha}{Numeric in [0,1], significance level (default 0.05) for the essential support quantile.
 The essential support is defined to capture around 1 - \code{alpha} of the posterior mass.}
 
 \item{h}{Numeric; target fill-in distance (default 0.1).}
+
+\item{method}{String; a character string specifying the BOSS method to use. Must be one of \code{moda} and \code{mcmc} (in development).}
 
 \item{modal_opts}{List of options for \code{BOSS_modal()}. Any of
 \code{update_step}, \code{max_iter}, \code{quad}, \code{lower},
@@ -32,6 +36,12 @@ The essential support is defined to capture around 1 - \code{alpha} of the poste
 \code{modal_check_warmup}, \code{modal_k.nn}, \code{modal_eps},
 \code{initial_design}, \code{delta}, \code{optim.n},
 \code{optim.max.iter}, \code{opt.lengthscale.grid}, \code{opt.grid}.}
+
+\item{mcmc_opts}{(In development) List of options for \code{BOSS_mcmc()}. Any of
+\code{update_step}, \code{max_iter}, \code{inner_iter}, \code{MCMC_size}, \code{quad},
+\code{lower}, \code{upper}, \code{nu}, \code{noise_var}, \code{modal_k.nn},
+\code{initial_design}, \code{delta}, \code{acc}, \code{explore_size},
+\code{optim.n}, \code{optim.max.iter}, \code{Rhat_eps}, \code{UCB_prob}.}
 
 \item{hess_opts}{List of options for \code{update_hessian()}. Any of
 \code{approach}, \code{GP.refine.eps}, \code{num.args}, \code{tol}.}

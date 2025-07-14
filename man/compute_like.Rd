@@ -34,7 +34,7 @@ Evaluate the (negative) log-likelihood of observed data under a Gaussian Process
 model, optionally including a linear-plus-quadratic mean function.
 }
 \details{
-\textbf{Zero-mean GP} (\code{quad = FALSE}):
+Zero-mean GP (\code{quad = FALSE}):
 \enumerate{
  \item Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
   \code{\link[BOSS]{cov_generator}}.
@@ -45,7 +45,7 @@ model, optionally including a linear-plus-quadratic mean function.
   \deqn{\frac{1}{2}\,y^\top Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
 }
 
-\textbf{GP with quadratic mean} (\code{quad = TRUE}):
+GP with quadratic mean (\code{quad = TRUE}):
 \enumerate{
  \item Construct design matrix \eqn{X = [1,\,x,\,\mathrm{unique}(x \otimes x)]}.
  \item Build \eqn{C = K_{xx} + \sigma^2_n I} and its precision \eqn{Q}.

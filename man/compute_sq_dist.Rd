@@ -23,7 +23,7 @@ is a vector, it will be treated as a single-column matrix.
 }
 \details{
 Internally, uses the identity
-  \\[||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y\\]
+  \deqn{||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y}
   to compute all pairwise squared distances efficiently.
 }
 \examples{

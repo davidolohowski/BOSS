@@ -10,7 +10,7 @@
 #'   \code{[i, j]} is the squared distance between row \code{i} of \code{X}
 #'   and row \code{j} of \code{Y}.
 #' @details Internally, uses the identity
-#'   \\[||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y\\]
+#'   \deqn{||x - y||^2 = ||x||^2 + ||y||^2 - 2 x^\top y}
 #'   to compute all pairwise squared distances efficiently.
 #' @examples
 #' # Two 2D points (Not run)
@@ -580,7 +580,7 @@ sim_once_internal <- function(xnew, intern, covfn, D) {
 #'   (\eqn{\sigma^2}) depending on the value of \code{quad} estimated by MLE.
 #'
 #' @details
-#' \textbf{Zero-mean GP} (\code{quad = FALSE}):
+#' Zero-mean GP (\code{quad = FALSE}):
 #' \enumerate{
 #'  \item Build covariance \eqn{C = K_{xx} + \sigma_n^2 I} via
 #'   \code{\link[BOSS]{cov_generator}}.
@@ -591,7 +591,7 @@ sim_once_internal <- function(xnew, intern, covfn, D) {
 #'   \deqn{\frac{1}{2}\,y^\top Q\,y \;-\; \log\det(Q) \;-\;\sum \log\bigl[\text{LogNormal}(\texttt{length_scale}\mid \texttt{prior_l})\bigr]}
 #' }
 #'
-#' \textbf{GP with quadratic mean} (\code{quad = TRUE}):
+#' GP with quadratic mean (\code{quad = TRUE}):
 #' \enumerate{
 #'  \item Construct design matrix \eqn{X = [1,\,x,\,\mathrm{unique}(x \otimes x)]}.
 #'  \item Build \eqn{C = K_{xx} + \sigma^2_n I} and its precision \eqn{Q}.
@@ -783,7 +783,7 @@ UCB <- function(x, data, cov, nv, D, d, quad = FALSE){
 #'
 UCB_internal <- function(x, intern, covfn, nv, D, delta, num_training) {
   # Call obtain_mean_var_internal to get mean and variance
-  fnew <- obtain_mean_var_internal(x = x, intern = intern, covfn = covfn, D = D)
+  fnew <- obtain_mean_var_internal(xnew = x, intern = intern, covfn = covfn, D = D)
   # Compute the UCB acquisition function
   beta <- 2 * log((num_training^2) * (pi^2) / (6 * delta))
   return(as.numeric(-fnew$mean - sqrt(beta * diag(fnew$var))))
@@ -836,7 +836,88 @@ EXPLORE <- function(x, data, cov, nv, quad = FALSE){
 #'
 EXPLORE_internal <- function(x, intern, covfn, nv, D) {
   # Call obtain_mean_var_internal to get mean and variance
-  fnew <- obtain_mean_var_internal(x = x, intern = intern, covfn = covfn, D = D)
+  fnew <- obtain_mean_var_internal(xnew = x, intern = intern, covfn = covfn, D = D)
   # Compute the pure exploration acquisition function
   return(as.numeric(-diag(fnew$var)))
+}
+
+
+#' Adaptive MCMC sampler for Internal Usage
+#'
+#' Adaptive MCMC sampler to sample from the posterior distribution of the GP surrogate (on \code{[0,1]^D} scale).
+#'
+#' @param N_sample Integer. Number of MCMC sample to generate.
+#' @param D Integer. Dimensionality of the input space.
+#' @param BO_surrogate The GP surrogate function from running BO.
+#' @param start_point The starting location for running MCMC.
+#'
+#' @return A matrix of size \code{N_sample x D} which is a MCMC sample obtained based on the GP surrogate \code{BO_surrogate}.
+#'
+adaptive_MCMC_internal <- function(N_sample = 15000, D, BO_surrogate, start_point){
+  MCMC_sample <- matrix(0, nrow = N_sample, ncol = D)
+  MCMC_sample[1,] <- start_point
+  for(i in 1:(N_sample - 1)) {
+    x_old <- MCMC_sample[i, ]
+    # Use a different proposal variance in early iterations
+    if (i < 1000) {
+      x_new <- x_old + rnorm(D, 0, 0.1)
+    } else {
+      # Adapt proposal using the empirical covariance from the chain
+      prop_cov <- cov(MCMC_sample[1:i, , drop = FALSE]) + 1e-6 * diag(D)
+      x_new <- MASS::mvrnorm(1, x_old, 2.38^2 / D * prop_cov)
+    }
+    # Define a local surrogate function for speed; use vectorized call inside optim-style evaluation
+    f_val_new <- as.numeric(BO_surrogate(matrix(x_new, ncol = D)))
+    f_val_old <- as.numeric(BO_surrogate(matrix(x_old, ncol = D)))
+    # Proposal densities are uniform on [0,1] so add log-dunif values
+    ratio <- f_val_new - f_val_old + sum(dunif(x_new, 0, 1, log = TRUE)) - sum(dunif(x_old, 0, 1, log = TRUE))
+    if (log(runif(1)) < ratio && !is.na(ratio)) {
+      MCMC_sample[i + 1, ] <- x_new
+    } else {
+      MCMC_sample[i + 1, ] <- x_old
+    }
+  }
+  return(MCMC_sample)
+}
+
+
+#' Adaptive MCMC sampler to sample from a GP surrogate
+#'
+#' Adaptive MCMC sampler to sample from the posterior distribution of the GP surrogate (on \code{[0,1]^D} scale).
+#' It assumes the surrogate is constructed for the entire posterior, not just the likelihood.
+#'
+#' @param boss_result A \code{boss_modal} or a \code{boss_mcmc} object.
+#' @param N_sample Integer. Number of MCMC sample to generate
+#'
+#' @return @return A matrix of size \code{N_sample x D} which is a MCMC sample obtained based on the GP surrogate \code{boss_result$surrogate}.
+#' @export
+adaptive_MCMC <- function(boss_result, N_sample = 15000){
+  D <- boss_result$D
+  MCMC_sample <- matrix(0, nrow = N_sample, ncol = D)
+  MCMC_sample[1,] <- boss_result$design_points$x[which.max(boss_result$design_points$y), , drop = F]
+  for(i in 1:(N_sample - 1)) {
+    x_old <- MCMC_sample[i, ]
+    # Use a different proposal variance in early iterations
+    if (i < 1000) {
+      x_new <- x_old + rnorm(D, 0, 0.1)
+    } else {
+      # Adapt proposal using the empirical covariance from the chain
+      prop_cov <- cov(MCMC_sample[1:i, , drop = FALSE]) + 1e-6 * diag(D)
+      x_new <- MASS::mvrnorm(1, x_old, 2.38^2 / D * prop_cov)
+    }
+    # Define a local surrogate function for speed; use vectorized call inside optim-style evaluation
+    f_val_new <- as.numeric(boss_result$surrogate((matrix(x_new, ncol = D) + boss_result$lower)*(boss_result$upper - boss_result$lower)))
+    f_val_old <- as.numeric(boss_result$surrogate((matrix(x_old, ncol = D) + boss_result$lower)*(boss_result$upper - boss_result$lower)))
+    # Proposal densities are uniform on [0,1] so add log-dunif values
+    ratio <- f_val_new - f_val_old + sum(dunif(x_new, 0, 1, log = TRUE)) - sum(dunif(x_old, 0, 1, log = TRUE))
+    if (log(runif(1)) < ratio && !is.na(ratio)) {
+      MCMC_sample[i + 1, ] <- x_new
+    } else {
+      MCMC_sample[i + 1, ] <- x_old
+    }
+  }
+  lower <- boss_result$lower
+  upper <- boss_result$upper
+  MCMC_sample <- t(apply(MCMC_sample, 1, function(x) x*(upper - lower) + lower))
+  return(MCMC_sample)
 }

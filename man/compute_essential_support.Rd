@@ -2,12 +2,12 @@
 % Please edit documentation in R/01_stage1.R
 \name{compute_essential_support}
 \alias{compute_essential_support}
-\title{Compute Essential Support for a \code{boss} Object}
+\title{Compute Essential Support for a \code{boss_moal} Object}
 \usage{
 compute_essential_support(boss_result, alpha = 0.05)
 }
 \arguments{
-\item{boss_result}{A S3 \code{boss} object (output of \code{BOSS_modal}), which must contain:
+\item{boss_result}{A S3 \code{boss_modal} object (output of \code{BOSS_modal}), which must contain:
 \describe{
   \item{\code{design_points$x}}{Scaled design matrix.}
   \item{\code{design_points$y}}{Responses.}
@@ -29,7 +29,7 @@ The input \code{boss_result} with a new or overwritten component
 }
 \description{
 Compute and store the 1-\eqn{\alpha} level set (ellipsoidal support) defined by the
-Hessian at the mode in a \code{boss} object.
+Hessian at the mode in a \code{boss_modal} object.
 }
 \examples{
 # Assuming `br` is a boss object with mode_hessian (Not run)

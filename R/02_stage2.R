@@ -1,7 +1,7 @@
-#' Extract Design Points within the essential support for a \code{boss} Object
+#' Extract Design Points within the essential support for a \code{boss_modal} or a \code{boss_mcmc} Object
 #'
-#' Given a \code{boss} object with \code{essential_support} computed (in original input space),
-#' builds \code{essential_design_points} that contains all design points inside the ellipsoid.
+#' Given a \code{boss_modal} or a \code{boss_mcmc} object with \code{essential_support} computed (in original input space),
+#' builds \code{essential_design_points} that contains all design points inside the essential support
 #'
 #' @param boss_result A \code{boss} object containing non-NULL
 #'   \code{essential_support}, and with \code{lower} and \code{upper} fields.
@@ -16,7 +16,6 @@
 #'
 #' @importFrom fields rdist
 #' @importFrom randtoolbox sobol
-#'
 #' @export
 construct_essential_designs <- function(boss_result) {
   # prerequisites
@@ -26,31 +25,57 @@ construct_essential_designs <- function(boss_result) {
     stop("boss_result must contain `lower` and `upper` for truncation")
   }
 
-  # support parameters (original space)
-  mu    <- ess$center
-  H     <- -ess$H            # flip to PSD
-  cval  <- ess$chi2_radius
-  D     <- length(mu)
+  if(inherits(boss_result, 'boss_modal')){
+    # support parameters (original space)
+    mu    <- ess$center
+    H     <- -ess$H            # flip to PSD
+    cval  <- ess$chi2_radius
+    D     <- length(mu)
 
-  # original and scaled design
-  Xs <- boss_result$design_points$x
-  Xo <- boss_result$design_points$x_original
-  Y  <- boss_result$design_points$y
+    # original and scaled design
+    Xs <- boss_result$design_points$x
+    Xo <- boss_result$design_points$x_original
+    Y  <- boss_result$design_points$y
 
-  # interior points
-  diffs <- t(t(Xo) - mu)
-  quad  <- rowSums((diffs %*% H) * diffs)
-  idx   <- which(quad <= cval)
-  Xs_int  <- Xs[idx,, drop=FALSE]
-  Xo_int  <- Xo[idx,, drop=FALSE]
-  Y_int   <- Y[idx]
+    # interior points
+    diffs <- t(t(Xo) - mu)
+    quad  <- rowSums((diffs %*% H) * diffs)
+    idx   <- which(quad <= cval)
+    Xs_int  <- Xs[idx,, drop=FALSE]
+    Xo_int  <- Xo[idx,, drop=FALSE]
+    Y_int   <- Y[idx]
 
-  boss_result$essential_design_points <- list(
-    x          = Xs_int,
-    x_original = Xo_int,
-    y          = Y_int
-  )
-  return(boss_result)
+    boss_result$essential_design_points <- list(
+      x          = Xs_int,
+      x_original = Xo_int,
+      y          = Y_int
+    )
+    return(boss_result)
+  }
+  else{
+    D <- boss_result$D
+
+    # original and scaled design
+    Xs <- boss_result$design_points$x
+    Xo <- boss_result$design_points$x_original
+    Y  <- boss_result$design_points$y
+
+    above <- sweep(Xo, 2, boss_result$essential_support$lower) > 0
+    below <- sweep(Xo, 2, boss_result$essential_support$upper) < 0
+
+    idx <- which(rowSums(above) + rowSums(below) == 2*D)
+
+    Xs_int  <- Xs[idx,, drop=FALSE]
+    Xo_int  <- Xo[idx,, drop=FALSE]
+    Y_int   <- Y[idx]
+
+    boss_result$essential_design_points <- list(
+      x          = Xs_int,
+      x_original = Xo_int,
+      y          = Y_int
+    )
+    return(boss_result)
+  }
 }
 
 
@@ -66,9 +91,10 @@ construct_essential_designs <- function(boss_result) {
 #' \item Taking the maximum of these minima.
 #' }
 #'
-#' @param boss_result A \code{boss} object with non-NULL
-#'   \code{essential_support}, \code{essential_design_points$x_original},
-#'   and containing \code{lower} and \code{upper}.
+#' @param boss_result A \code{boss_modal} object with non-NULL
+#'   \code{essential_support}, \code{essential_design_points$x_original}
+#'   and containing \code{lower} and \code{upper},
+#'   or a \code{boss_mcmc} with non-NULL \code{essential_design_points$x_original} and containing \code{essential_support}.
 #' @param n_samples Integer; number of unifrom samples in the essential support to estimate the fill-in (default 10000).
 #'
 #' @return The input \code{boss_result}, with \code{fill_in} updated.
@@ -76,51 +102,73 @@ construct_essential_designs <- function(boss_result) {
 #' @importFrom stats dist
 #' @export
 compute_fill_in <- function(boss_result, n_samples = 10000) {
-  ess <- boss_result$essential_support
-  ed <- boss_result$essential_design_points
-  if (is.null(ess) || is.null(ed$x_original)) {
-    stop("Please run compute_essential_support() and construct_essential_designs() first.")
+  if (inherits(boss_result, 'boss_modal')) {
+    ess <- boss_result$essential_support
+    ed <- boss_result$essential_design_points
+    if (is.null(ess) || is.null(ed$x_original)) {
+      stop("Please run compute_essential_support() and construct_essential_designs() first.")
+    }
+    center <- ess$center
+    Hinv <- -ess$H
+    cval <- ess$chi2_radius
+    Xd <- as.matrix(ed$x_original)
+    if (is.vector(Xd)) {
+      Xd <- matrix(Xd, ncol = 1)
+    }
+    lower <- boss_result$lower
+    upper <- boss_result$upper
+    D <- length(center)
+
+    Ainv <- solve(Hinv)
+
+    sample_ellipsoid <- function(n, center, Ainv, cval) {
+      unit_pts <- matrix(runif(n * D), ncol = D)
+      z <- qnorm(unit_pts)
+      z <- z / sqrt(rowSums(z^2))
+      r <- runif(n)^(1 / D)
+      z <- z * r
+
+      L <- chol(Ainv)
+      scaled <- z %*% L * sqrt(cval)
+      sweep(scaled, 2, center, "+")
+    }
+
+    test_pts <- sample_ellipsoid(n_samples, center, Ainv, cval)
+    test_pts <- pmin(pmax(test_pts, matrix(lower, nrow = n_samples, ncol = D, byrow = TRUE)),
+                     matrix(upper, nrow = n_samples, ncol = D, byrow = TRUE))
+
+    dmat <- fields::rdist(test_pts, Xd)
+    min_d <- apply(dmat, 1, min)
+
+    boss_result$fill_in <- max(min_d, na.rm = TRUE)
+    return(boss_result)
   }
+  else{
+    ed <- boss_result$essential_design_points
+    if (is.null(ed$x_original)) {
+      stop("Please run construct_essential_designs() first.")
+    }
+    Xd <- as.matrix(ed$x_original)
 
-  center <- ess$center
-  Hinv <- -ess$H
-  cval <- ess$chi2_radius
-  Xd <- as.matrix(ed$x_original)
-  if (is.vector(Xd)) {
-    Xd <- matrix(Xd, ncol = 1)
+    lower <- boss_result$lower
+    upper <- boss_result$upper
+    D <- boss_result$D
+
+    test_pts <- matrix(runif(n_samples*D, min = boss_result$essential_support$lower,
+                             max = boss_result$essential_support$upper),
+                       ncol = D, byrow = T)
+
+    dmat <- fields::rdist(test_pts, Xd)
+    min_d <- apply(dmat, 1, min)
+
+    boss_result$fill_in <- max(min_d, na.rm = TRUE)
+    return(boss_result)
   }
-  lower <- boss_result$lower
-  upper <- boss_result$upper
-  D <- length(center)
-
-  Ainv <- solve(Hinv)
-
-  sample_ellipsoid <- function(n, center, Ainv, cval) {
-    unit_pts <- matrix(runif(n * D), ncol = D)
-    z <- qnorm(unit_pts)
-    z <- z / sqrt(rowSums(z^2))
-    r <- runif(n)^(1 / D)
-    z <- z * r
-
-    L <- chol(Ainv)
-    scaled <- z %*% L * sqrt(cval)
-    sweep(scaled, 2, center, "+")
-  }
-
-  test_pts <- sample_ellipsoid(n_samples, center, Ainv, cval)
-  test_pts <- pmin(pmax(test_pts, matrix(lower, nrow = n_samples, ncol = D, byrow = TRUE)),
-                   matrix(upper, nrow = n_samples, ncol = D, byrow = TRUE))
-
-  dmat <- fields::rdist(test_pts, Xd)
-  min_d <- apply(dmat, 1, min)
-
-  boss_result$fill_in <- max(min_d, na.rm = TRUE)
-  return(boss_result)
 }
 
 #' Fill-in essential support with a Sobol-sequence
 #'
-#' Given a \code{boss} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
+#' Given a \code{boss_modal} or a \code{boss_mcmc} object with \code{essential_support} and \code{essential_design_points$x_original}, this function will
 #' approximately fill-in with a Sobol-sequence in the essential support and filter against existing design points:
 #' \enumerate{
 #' \item Based on the required fill-in distance \code{h}, estimate the required number of quasi-uniform design points by
@@ -138,9 +186,10 @@ compute_fill_in <- function(boss_result, n_samples = 10000) {
 #' If the candidate pool is over \code{max_add}, or if \code{fill_in} cannot be reduced below \code{h},
 #' a warning is issued.
 #'
-#' @param boss_result A \code{boss} object with non-NULL
-#'   \code{essential_support} and \code{essential_design_points$x_original},
-#'   and containing \code{lower} and \code{upper}.
+#' @param boss_result A \code{boss_modal} object with non-NULL
+#'   \code{essential_support}, \code{essential_design_points$x_original}
+#'   and containing \code{lower} and \code{upper},
+#'   or a \code{boss_mcmc} with non-NULL \code{essential_design_points$x_original} and containing \code{essential_support}.
 #' @param h Numeric; target fill-in distance (>= 0).
 #' @param max_add Integer; maximum number of points to add (default 100).
 #' @param n_sample_max Integer; maximum number of Sobol-sequence candidates to be added (default 10000).
@@ -154,8 +203,11 @@ compute_fill_in <- function(boss_result, n_samples = 10000) {
 fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose = 0) {
   ess <- boss_result$essential_support
   ed <- boss_result$essential_design_points
-  if (is.null(ess) || is.null(ed$x_original)){
+  if (is.null(ess) || is.null(ed$x_original) & inherits(boss_result, 'boss_modal')){
     stop('Please run compute_essential_support() and construct_essential_designs() first')
+  }
+  if (is.null(ed$x_original) & inherits(boss_result, 'boss_mcmc')){
+    stop('Please run construct_essential_designs() first')
   }
   if (!is.numeric(boss_result$fill_in)){
     stop('Please run compute_fill_in() before calling fill_in()')
@@ -167,12 +219,19 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
     stop("`verbose` must be an integer in {0,1}")
   }
 
-  center <- ess$center
-  Hinv <- -ess$H
-  cval <- ess$chi2_radius
-  lower <- boss_result$lower
-  upper <- boss_result$upper
-  D <- length(center)
+  if(inherits(boss_result, 'boss_modal')){
+    center <- ess$center
+    Hinv <- -ess$H
+    cval <- ess$chi2_radius
+    lower <- boss_result$lower
+    upper <- boss_result$upper
+    D <- length(center)
+  }
+  else{
+    lower <- ess$lower
+    upper <- ess$upper
+    D <- boss_result$D
+  }
 
   Xo <- as.matrix(ed$x_original)
   if (D == 1) {
@@ -197,9 +256,14 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
   sobol_box <- sweep(sobol_unit, 2, upper - lower, "*") + matrix(lower, nrow = n_samples, ncol = D, byrow = TRUE)
 
   # Filter by ellipsoid membership
-  diffs_cand <- sweep(sobol_box, 2, center)
-  quad_cand <- rowSums((diffs_cand %*% Hinv) * diffs_cand)
-  sobol_inside <- sobol_box[quad_cand <= cval, , drop = FALSE]
+  if(inherits(boss_result, 'boss_modal')){
+    diffs_cand <- sweep(sobol_box, 2, center)
+    quad_cand <- rowSums((diffs_cand %*% Hinv) * diffs_cand)
+    sobol_inside <- sobol_box[quad_cand <= cval, , drop = FALSE]
+  }
+  else{
+    sobol_inside <- sobol_box
+  }
 
   # Distance to existing points
   dmat <- if (nrow(Xo) > 0) fields::rdist(sobol_inside, Xo) else matrix(Inf, nrow = nrow(sobol_inside), ncol = 1)
@@ -211,7 +275,7 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 
   if (nrow(candidates) == 0) {
     if (verbose >= 1) {
-      cat("No additional points needed — fill-in already satisfied.\n")
+      cat("No additional points needed; Fill-in distance already satisfied.\n")
     }
     boss_result$essential_design_points$x_original <- Xo
     boss_result$essential_design_points$x <- Xs
@@ -261,7 +325,7 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 #' }
 #'
 #'
-#' @param boss_result A \code{boss} object with fields:
+#' @param boss_result A \code{boss_modal} or a \code{boss_mcmc} object with fields:
 #'   \describe{
 #'     \item{\code{essential_design_points}}{List with \code{x_original}, \code{y}, \code{x}.}
 #'     \item{\code{lower}, \code{upper}}{Bounds for scaling inputs.}
@@ -279,6 +343,7 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 #'
 #' @export
 update_boss <- function(boss_result) {
+  D <- boss_result$D
   ## 1) Fill missing y's in essential_design_points
   ed <- boss_result$essential_design_points
   nas <- which(is.na(ed$y))
@@ -290,35 +355,48 @@ update_boss <- function(boss_result) {
   }
 
   ## 2) Temporarily override design_points
-  old_dp <- boss_result$design_points
-  boss_result$design_points <- list(
-    x_original = ed$x_original,
-    x = sweep(ed$x_original, 2, boss_result$lower, "-") /
-      (boss_result$upper - boss_result$lower),
-    y = ed$y
-  )
+  if(inherits(boss_result, 'boss_modal')){
+    old_dp <- boss_result$design_points
 
-  ## 3) Update mode and Hessian
-  boss_result <- update_hessian(boss_result)
+    boss_result$design_points <- list(
+      x_original = ed$x_original,
+      x = sweep(sweep(ed$x_original, 2, boss_result$lower, "-"), 2,
+                boss_result$upper - boss_result$lower, '/'),
+      y = ed$y
+    )
+    ## 3) Update mode and Hessian
+    boss_result <- update_hessian(boss_result)
+  }
+  else{
+    old_dp <- boss_result$design_points
 
+    newdata <- unique(cbind(rbind(ed$x_original, old_dp$x_original), y = c(ed$y, old_dp$y)))
+
+    boss_result$design_points <- list(
+      x_original = newdata[,-ncol(newdata)],
+      x = sweep(sweep(newdata[,-ncol(newdata)], 2, boss_result$lower, "-"), 2,
+                boss_result$upper - boss_result$lower, '/'),
+      y = newdata[,ncol(newdata)])
+  }
   ## 4) Refit GP hyperparameters
   x_scaled <- boss_result$design_points$x
-  y_obs    <- boss_result$design_points$y - mean(boss_result$design_points$y)
+  rel <-  mean(boss_result$design_points$y)
+  y_obs <- boss_result$design_points$y - rel
 
   opt <- optim(
-    runif(1, 0.01, 0.99),
+    runif(D, 0.01, 0.99),
     function(l) compute_like(
       length_scale = l,
       y = y_obs,
       x = x_scaled,
-      D = boss_result$D,
+      D = D,
       nu = boss_result$gp_params$nu,
       quad = boss_result$quad,
       noise_var = boss_result$noise_var
     ),
     control = list(maxit = 1000),
-    lower = 0.01,
-    upper = 0.99,
+    lower = rep(0.01, D),
+    upper = rep(0.99, D),
     method = 'L-BFGS-B'
   )
 
@@ -326,7 +404,7 @@ update_boss <- function(boss_result) {
     length_scale = NULL,
     y = y_obs,
     x = x_scaled,
-    D = boss_result$D,
+    D = D,
     quad = boss_result$quad,
   )
 
@@ -336,8 +414,8 @@ update_boss <- function(boss_result) {
   ## 5) Precompute for prediction
   intern <- predict_gp_internal(
     data = list(
-      x = boss_result$essential_design_points$x,
-      y = (boss_result$essential_design_points$y - mean(boss_result$essential_design_points$y))
+      x = x_scaled,
+      y = y_obs
     ),
     noise_var = boss_result$noise_var,
     choice_cov = cov_generator(
@@ -352,14 +430,14 @@ update_boss <- function(boss_result) {
   boss_result$surrogate <- function(xnew){
     # Scale
     xnew <- matrix(xnew, ncol = boss_result$D)
-    x_s <- sweep(xnew, 2, boss_result$lower, "-") / (boss_result$upper - boss_result$lower)
+    x_s <- sweep(sweep(xnew, 2, boss_result$lower, "-"), 2, (boss_result$upper - boss_result$lower), '/')
     obtain_mean_internal(
       xnew = x_s, intern = intern,
       covfn = cov_generator(
         length_scale = boss_result$gp_params$length_scale,
         nu           = boss_result$gp_params$nu,
         signal_var   = boss_result$gp_params$signal_var),
-      D = boss_result$D) + mean(boss_result$essential_design_points$y)
+      D = boss_result$D) + rel
   }
 
   ## 7) Restore original design_points
