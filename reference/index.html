@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.27</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.28</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,6 +48,12 @@
 
       <dl><dt>
 
+          <code><a href="BOSS_mcmc.html">BOSS_mcmc()</a></code>
+
+        </dt>
+        <dd>Bayesian Optimization via Sequential MCMC (In Development)</dd>
+      </dl><dl><dt>
+
           <code><a href="BOSS_modal.html">BOSS_modal()</a></code>
 
         </dt>
@@ -78,6 +84,18 @@
         <dd>Upper Confidence Bound (UCB) Acquisition Function (Using GP Internals)</dd>
       </dl><dl><dt>
 
+          <code><a href="adaptive_MCMC.html">adaptive_MCMC()</a></code>
+
+        </dt>
+        <dd>Adaptive MCMC sampler to sample from a GP surrogate</dd>
+      </dl><dl><dt>
+
+          <code><a href="adaptive_MCMC_internal.html">adaptive_MCMC_internal()</a></code>
+
+        </dt>
+        <dd>Adaptive MCMC sampler for Internal Usage</dd>
+      </dl><dl><dt>
+
           <code><a href="boss.html">boss()</a></code>
 
         </dt>
@@ -87,7 +105,7 @@
           <code><a href="compute_essential_support.html">compute_essential_support()</a></code>
 
         </dt>
-        <dd>Compute Essential Support for a <code>boss</code> Object</dd>
+        <dd>Compute Essential Support for a <code>boss_moal</code> Object</dd>
       </dl><dl><dt>
 
           <code><a href="compute_fill_in.html">compute_fill_in()</a></code>
@@ -111,7 +129,7 @@
           <code><a href="construct_essential_designs.html">construct_essential_designs()</a></code>
 
         </dt>
-        <dd>Extract Design Points within the essential support for a <code>boss</code> Object</dd>
+        <dd>Extract Design Points within the essential support for a <code>boss_modal</code> or a <code>boss_mcmc</code> Object</dd>
       </dl><dl><dt>
 
           <code><a href="cov_generator.html">cov_generator()</a></code>
@@ -124,6 +142,12 @@
 
         </dt>
         <dd>Fill-in essential support with a Sobol-sequence</dd>
+      </dl><dl><dt>
+
+          <code><a href="obtain_mean_internal.html">obtain_mean_internal()</a></code>
+
+        </dt>
+        <dd>Predict Posterior Mean Only Using GP Internals</dd>
       </dl><dl><dt>
 
           <code><a href="obtain_mean_var_internal.html">obtain_mean_var_internal()</a></code>
@@ -156,6 +180,12 @@
         <dd>Print Method for BOSS Objects</dd>
       </dl><dl><dt>
 
+          <code><a href="sim_once_internal.html">sim_once_internal()</a></code>
+
+        </dt>
+        <dd>Simulate One GP Realization at New Locations</dd>
+      </dl><dl><dt>
+
           <code><a href="summary.boss.html">summary(<i>&lt;boss&gt;</i>)</a></code>
 
         </dt>
@@ -171,7 +201,7 @@
           <code><a href="update_hessian.html">update_hessian()</a></code>
 
         </dt>
-        <dd>Update Mode Hessian for a <code>boss</code> Object (with PSD check)</dd>
+        <dd>Update Mode Hessian for a <code>boss_modal</code> Object (with PSD check)</dd>
       </dl></div>
   </main></div>
 
