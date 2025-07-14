@@ -36,7 +36,6 @@ This is a basic example which shows you how to solve a simple problem in 1-D.
 Assume the true (log) marginal likelihood is given by the following sinusoidal function:
 
 ```{r example}
-set.seed(1234)
 library(BOSS)
 f1d <- function(x) sin(0.5*pi*x)
 ```
@@ -64,7 +63,7 @@ br <- BOSS_modal(func = f1d, D = 1,
                         max_iter = 20,
                         verbose = 1)
 
-br <- update_hessian(br, approach = "num.obj")
+br <- update_hessian(br)
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)

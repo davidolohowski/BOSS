@@ -850,7 +850,7 @@ update_hessian <- function(boss_result,
                            num.args = list(method = 'Richardson', method.args = list()),
                            tol         = 1e-8,
                            ...) {
-  if(inherits(boss_result, 'boss_modal')){
+  if(!inherits(boss_result, 'boss_modal')){
     stop(paste0('No applicable method from update_hessian() to object of class ', class(boss_result)))
   }
   # extract original (unscaled) design matrix and responses
