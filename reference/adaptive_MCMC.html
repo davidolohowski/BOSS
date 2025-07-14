@@ -15,7 +15,7 @@ It assumes the surrogate is constructed for the entire posterior, not just the l
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.29</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,7 @@ It assumes the surrogate is constructed for the entire posterior, not just the l
 
 
 <dl><dt id="arg-boss-result">boss_result<a class="anchor" aria-label="anchor" href="#arg-boss-result"></a></dt>
-<dd><p>A <code>boss_modal</code> or a <code>boss_mcmc</code> object.</p></dd>
+<dd><p>A <code>boss</code> object.</p></dd>
 
 
 <dt id="arg-n-sample">N_sample<a class="anchor" aria-label="anchor" href="#arg-n-sample"></a></dt>
@@ -63,7 +63,7 @@ It assumes the surrogate is constructed for the entire posterior, not just the l
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>@return A matrix of size <code>N_sample x D</code> which is a MCMC sample obtained based on the GP surrogate <code>boss_result$surrogate</code>.</p>
+    <p>A matrix of size <code>N_sample x D</code> which is a MCMC sample obtained based on the GP surrogate <code>boss_result$surrogate</code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
