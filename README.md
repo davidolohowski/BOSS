@@ -47,12 +47,12 @@ br <- boss(f1d, D = 1, method = 'modal',
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.74 seconds.
+#> Total time taken: 0.88 seconds.
 #> Start updating Hessian at the mode...
-#> Hessian updated in  0.05  seconds.
+#> Hessian updated in  0.02  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
-#> fill in: added 14 point(s).
-#> Final update completed in  0.03  seconds.
+#> fill in: added 20 point(s).
+#> Final update completed in  0.05  seconds.
 
 plot(br)
 ```
@@ -72,22 +72,50 @@ br <- BOSS_modal(func = f1d, D = 1,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.41 seconds.
+#> Total time taken: 0.55 seconds.
 
 br <- update_hessian(br)
 br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
 br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
-#> fill in: added 17 point(s).
-#> Warning in fill_in(br, h = 0.1, verbose = 1, max_add = 100): Updated fill-in
-#> distance is (0.101440) > target h (0.100000); Adjust your expectation by either
-#> increasing max_add and n_sample_max or increasing h.
+#> fill in: added 12 point(s).
 br_update <- update_boss(br)
 plot(br_update)
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" />
+
+Take a look at the normalized posterior:
+
+``` r
+br1 <- get_normalized_posterior(br_update, int_method = "mc", nsamples = 10000)
+br2 <- get_normalized_posterior(br_update, int_method = "numeric")
+```
+
+``` r
+# Define grid
+x_vals <- seq(0, 2, length.out = 300)
+
+# Evaluate both posteriors
+post_mc <- sapply(x_vals, br1$normalized_posterior)
+post_num <- sapply(x_vals, br2$normalized_posterior)
+
+# Plot
+plot(
+  x_vals, post_num, type = "l", lwd = 2, col = "blue",
+  xlab = "Parameter", ylab = "Density",
+  main = "Comparison of Normalized Posterior (Numeric vs MC)"
+)
+lines(x_vals, post_mc, col = "red", lwd = 2, lty = 2)
+legend(
+  "topright",
+  legend = c("Numeric integration", "Monte Carlo integration"),
+  col = c("blue", "red"), lwd = 2, lty = c(1,2)
+)
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ## 2-D Example
 
@@ -106,7 +134,7 @@ br3 <- boss(f2d, D = 2, method = 'modal',
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.08 seconds.
+#> Total time taken: 0.97 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0.03  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
@@ -117,7 +145,7 @@ br3 <- boss(f2d, D = 2, method = 'modal',
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
 #> Updated fill-in distance is (0.446202) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.57  seconds.
+#> Final update completed in  0.54  seconds.
 plot(br3)
 ```
 
@@ -143,7 +171,7 @@ br3 <- BOSS_modal(func = f2d, D = 2,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.13 seconds.
+#> Total time taken: 1.09 seconds.
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)
@@ -158,7 +186,7 @@ br3 <- fill_in(br3, h = 0.1, max_add = 100)
 plot(br3)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ``` r
 
@@ -166,3 +194,33 @@ br3_update <- update_boss(br3)
 br3_update$surrogate(c(1,1))
 #> [1] -4.784129
 ```
+
+The posterior can be computed as before:
+
+``` r
+br3_update <- get_normalized_posterior(br3_update, int_method = "mc", nsamples = 10000)
+```
+
+``` r
+# plot the posterior
+x_seq <- seq(-3, 3, length.out = 100)
+y_seq <- seq(-3, 3, length.out = 100)
+
+# Make grid
+grid <- expand.grid(x = x_seq, y = y_seq)
+
+# Evaluate the posterior on the grid
+dens_vals <- apply(as.matrix(grid), 1, br3_update$normalized_posterior)
+dens_matrix <- matrix(dens_vals, nrow = length(x_seq), byrow = FALSE)
+
+# Plot
+filled.contour(
+  x_seq, y_seq, dens_matrix,
+  color.palette = terrain.colors,
+  xlab = "Parameter 1",
+  ylab = "Parameter 2",
+  main = "Normalized Posterior Density (2D)"
+)
+```
+
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />

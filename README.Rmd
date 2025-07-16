@@ -72,6 +72,38 @@ br_update <- update_boss(br)
 plot(br_update)
 ```
 
+
+Take a look at the normalized posterior:
+
+```{r}
+br1 <- get_normalized_posterior(br_update, int_method = "mc", nsamples = 10000)
+br2 <- get_normalized_posterior(br_update, int_method = "numeric")
+```
+
+```{r}
+# Define grid
+x_vals <- seq(0, 2, length.out = 300)
+
+# Evaluate both posteriors
+post_mc <- sapply(x_vals, br1$normalized_posterior)
+post_num <- sapply(x_vals, br2$normalized_posterior)
+
+# Plot
+plot(
+  x_vals, post_num, type = "l", lwd = 2, col = "blue",
+  xlab = "Parameter", ylab = "Density",
+  main = "Comparison of Normalized Posterior (Numeric vs MC)"
+)
+lines(x_vals, post_mc, col = "red", lwd = 2, lty = 2)
+legend(
+  "topright",
+  legend = c("Numeric integration", "Monte Carlo integration"),
+  col = c("blue", "red"), lwd = 2, lty = c(1,2)
+)
+```
+
+
+
 ## 2-D Example
 
 Test the BOSS algorithm on a 2-D Gaussian density. The objective function here is the log-density of a randomly generated bivariate Gaussian random variable.
@@ -112,4 +144,35 @@ plot(br3)
 br3_update <- update_boss(br3)
 br3_update$surrogate(c(1,1))
 ```
+
+
+The posterior can be computed as before:
+
+```{r}
+br3_update <- get_normalized_posterior(br3_update, int_method = "mc", nsamples = 10000)
+```
+
+```{r}
+# plot the posterior
+x_seq <- seq(-3, 3, length.out = 100)
+y_seq <- seq(-3, 3, length.out = 100)
+
+# Make grid
+grid <- expand.grid(x = x_seq, y = y_seq)
+
+# Evaluate the posterior on the grid
+dens_vals <- apply(as.matrix(grid), 1, br3_update$normalized_posterior)
+dens_matrix <- matrix(dens_vals, nrow = length(x_seq), byrow = FALSE)
+
+# Plot
+filled.contour(
+  x_seq, y_seq, dens_matrix,
+  color.palette = terrain.colors,
+  xlab = "Parameter 1",
+  ylab = "Parameter 2",
+  main = "Normalized Posterior Density (2D)"
+)
+```
+
+
 

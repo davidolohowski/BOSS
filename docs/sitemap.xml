@@ -4,6 +4,7 @@
 <url><loc>https://davidolohowski.github.io/BOSS/index.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/BOSS_mcmc.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/BOSS_modal.html</loc></url>
+<url><loc>https://davidolohowski.github.io/BOSS/reference/BOSS_modal_v2.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/EXPLORE.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/EXPLORE_internal.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/UCB.html</loc></url>
@@ -19,6 +20,7 @@
 <url><loc>https://davidolohowski.github.io/BOSS/reference/cov_generator.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/estimate_hessian.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/fill_in.html</loc></url>
+<url><loc>https://davidolohowski.github.io/BOSS/reference/get_normalized_posterior.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/index.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/obtain_mean_internal.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/obtain_mean_var_internal.html</loc></url>
@@ -29,6 +31,7 @@
 <url><loc>https://davidolohowski.github.io/BOSS/reference/sim_once_internal.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/summary.boss.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/update_boss.html</loc></url>
+<url><loc>https://davidolohowski.github.io/BOSS/reference/update_boss_faster.html</loc></url>
 <url><loc>https://davidolohowski.github.io/BOSS/reference/update_hessian.html</loc></url>
 </urlset>
 
