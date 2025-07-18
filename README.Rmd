@@ -78,6 +78,7 @@ Take a look at the normalized posterior:
 ```{r}
 br1 <- get_normalized_posterior(br_update, int_method = "mc", nsamples = 10000)
 br2 <- get_normalized_posterior(br_update, int_method = "numeric")
+br3 <- get_normalized_posterior(br_update, int_method = "aghq", aghq_K = 10)
 ```
 
 ```{r}
@@ -87,18 +88,20 @@ x_vals <- seq(0, 2, length.out = 300)
 # Evaluate both posteriors
 post_mc <- sapply(x_vals, br1$normalized_posterior)
 post_num <- sapply(x_vals, br2$normalized_posterior)
+post_aghq <- sapply(x_vals, br3$normalized_posterior)
 
 # Plot
 plot(
   x_vals, post_num, type = "l", lwd = 2, col = "blue",
   xlab = "Parameter", ylab = "Density",
-  main = "Comparison of Normalized Posterior (Numeric vs MC)"
+  main = "Comparison of Normalized Posterior (Numeric vs MC vs AGHQ)"
 )
 lines(x_vals, post_mc, col = "red", lwd = 2, lty = 2)
+lines(x_vals, post_aghq, col = "green", lwd = 2, lty = 3)
 legend(
-  "topright",
-  legend = c("Numeric integration", "Monte Carlo integration"),
-  col = c("blue", "red"), lwd = 2, lty = c(1,2)
+  "bottomright",
+  legend = c("Numeric integration", "Monte Carlo integration", "AGHQ"),
+  col = c("blue", "red", "green"), lty = c(1, 2, 3), lwd = 2
 )
 ```
 

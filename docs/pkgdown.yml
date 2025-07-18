@@ -2,7 +2,7 @@ pandoc: '3.5'
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles: {}
-last_built: 2025-07-16T06:12Z
+last_built: 2025-07-18T05:20Z
 urls:
   reference: https://davidolohowski.github.io/BOSS/reference
   article: https://davidolohowski.github.io/BOSS/articles

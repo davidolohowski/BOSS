@@ -50,6 +50,8 @@ boss <- function(func,
                  fillin_opts = list(),
                  verbose     = 3) {
 
+  method <- match.arg(method)
+
   if(!method %in% c('modal', 'mcmc')){
     stop("method must be one of 'modal' or 'mcmc'!")
   }
