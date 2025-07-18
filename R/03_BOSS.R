@@ -64,70 +64,12 @@ boss <- function(func,
     warning(cat("BOSS mcmc method is supplied with arguments intended for BOSS modal. Make sure that the correct method was chosen."))
   }
 
-  ## 0) Default option lists
-  default_modal <- list(
-    update_step         = 5,
-    max_iter            = 100,
-    quad                = FALSE,
-    lower               = rep(0, D),
-    upper               = rep(1, D),
-    nu                  = Inf,
-    noise_var           = 1e-6,
-    modal_iter_check    = 10,
-    modal_check_warmup  = 20,
-    modal_k.nn          = 5,
-    modal_eps           = 0.1,
-    initial_design      = 5,
-    delta               = 0.01,
-    optim.n             = 5,
-    optim.max.iter      = 1000,
-    opt.lengthscale.grid= NULL,
-    opt.grid            = NULL
-  )
-  default_mcmc <- list(
-    update_step         = 10,
-    max_iter            = 50,
-    inner_iter          = 10,
-    MCMC_size           = 10000,
-    quad                = FALSE,
-    lower               = rep(0,D),
-    upper               = rep(1,D),
-    nu                  = Inf,
-    noise_var           = 1e-6,
-    modal_k.nn          = 5,
-    initial_design      = 10,
-    delta               = 0.01,
-    alpha               = alpha,
-    acc                 = 0.25,
-    explore_size        = 500,
-    optim.n             = 5,
-    optim.max.iter      = 1000,
-    Rhat_eps            = 0.01,
-    UCB_prob            = 0.1
-  )
-  default_hess  <- list(
-    approach      = 'num.GP.refine',
-    GP.refine.args = list(eps = NULL, n_add = NULL),
-    num.args = list(method = 'Richardson', method.args = list()),
-    tol         = 1e-8
-  )
-  default_essup <- list(
-    alpha             = alpha,
-    n_samples         = 10000
-  )
-  default_fillin <- list(
-    h         = h,
-    max_add   = 100,
-    n_sample_max = 10000,
-    verbose   = verbose
-  )
-
   ## 1) Merge user options onto defaults
-  modal_opts   <- modifyList(default_modal,   modal_opts)
-  mcmc_opts    <- modifyList(default_mcmc,    mcmc_opts)
-  hess_opts    <- modifyList(default_hess,    hess_opts)
-  essup_opts   <- modifyList(default_essup,   essup_opts)
-  fillin_opts  <- modifyList(default_fillin,  fillin_opts)
+  modal_opts   <- setup_modal_opts(D, modal_opts)
+  mcmc_opts    <- setup_mcmc_opts(D, alpha, mcmc_opts)
+  hess_opts    <- setup_hess_opts(hess_opts)
+  essup_opts   <- setup_essup_opts(alpha, essup_opts)
+  fillin_opts  <- setup_fillin_opts(h, verbose, fillin_opts)
 
   if(method == 'modal'){
     ## 2) Step 1: run BOSS_modal()
@@ -183,7 +125,7 @@ boss <- function(func,
                 c(list(boss_result = br), fillin_opts))
 
   ## 6) Step 5: final update (mode, Hessian, GP hyperparams, surrogate)
-  br <- update_boss(br)
+  br <- update_boss(br, hess_opts = hess_opts)
   if (verbose >= 1) {
     end_time <- Sys.time()
     cat("Final update completed in ", round(difftime(end_time, start_time, units = "secs"), 2), " seconds.\n")

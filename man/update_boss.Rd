@@ -4,7 +4,7 @@
 \alias{update_boss}
 \title{Update a \code{boss} Object After Adding New Essential Fill-in Design Points}
 \usage{
-update_boss(boss_result)
+update_boss(boss_result, hess_opts = list())
 }
 \arguments{
 \item{boss_result}{A \code{boss} object with fields:
@@ -14,6 +14,9 @@ update_boss(boss_result)
   \item{\code{objective_function}}{Callable to evaluate new design points.}
   \item{\code{gp_params}}{Includes \code{noise_var}, \code{nu}, \code{quad} flag, etc.}
 }}
+
+\item{hess_opts}{List of options for \code{update_hessian()}. Any of
+\code{approach}, \code{GP.refine.eps}, \code{num.args}, \code{tol}.}
 }
 \value{
 The updated \code{boss_result}, with:

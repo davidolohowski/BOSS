@@ -1,3 +1,99 @@
+#' @keywords internal
+deep_merge_list <- function(defaults, user) {
+  for (name in names(user)) {
+    if (is.list(user[[name]]) && is.list(defaults[[name]])) {
+      defaults[[name]] <- deep_merge_list(defaults[[name]], user[[name]])
+    } else {
+      defaults[[name]] <- user[[name]]
+    }
+  }
+  defaults
+}
+
+#' @keywords internal
+setup_modal_opts <- function(D, modal_opts = list()) {
+  default_modal <- list(
+    update_step          = 5,
+    max_iter             = 100,
+    quad                 = FALSE,
+    lower                = rep(0, D),
+    upper                = rep(1, D),
+    nu                   = Inf,
+    noise_var            = 1e-6,
+    modal_iter_check     = 10,
+    modal_check_warmup   = 20,
+    modal_k.nn           = 5,
+    modal_eps            = 0.1,
+    initial_design       = 5,
+    delta                = 0.01,
+    optim.n              = 5,
+    optim.max.iter       = 1000,
+    opt.lengthscale.grid = NULL,
+    opt.grid             = NULL
+  )
+  modifyList(default_modal, modal_opts)
+}
+
+#' @keywords internal
+setup_mcmc_opts <- function(D, alpha, mcmc_opts = list()) {
+  default_mcmc <- list(
+    update_step     = 10,
+    max_iter        = 50,
+    inner_iter      = 10,
+    MCMC_size       = 10000,
+    quad            = FALSE,
+    lower           = rep(0, D),
+    upper           = rep(1, D),
+    nu              = Inf,
+    noise_var       = 1e-6,
+    modal_k.nn      = 5,
+    initial_design  = 10,
+    delta           = 0.01,
+    alpha           = alpha,
+    acc             = 0.25,
+    explore_size    = 500,
+    optim.n         = 5,
+    optim.max.iter  = 1000,
+    Rhat_eps        = 0.01,
+    UCB_prob        = 0.1
+  )
+  modifyList(default_mcmc, mcmc_opts)
+}
+
+#' @keywords internal
+setup_hess_opts <- function(hess_opts = list()) {
+  default_hess <- list(
+    approach        = 'num.GP.refine',
+    GP.refine.args  = list(eps = NULL, n_add = NULL),
+    num.args        = list(method = 'Richardson', method.args = list()),
+    tol             = 1e-8
+  )
+  modifyList(default_hess, hess_opts)
+}
+
+#' @keywords internal
+setup_essup_opts <- function(alpha, essup_opts = list()) {
+  default_essup <- list(
+    alpha     = alpha,
+    n_samples = 10000
+  )
+  modifyList(default_essup, essup_opts)
+}
+
+#' @keywords internal
+setup_fillin_opts <- function(h, verbose = FALSE, fillin_opts = list()) {
+  default_fillin <- list(
+    h            = h,
+    max_add      = 100,
+    n_sample_max = 10000,
+    verbose      = verbose
+  )
+  modifyList(default_fillin, fillin_opts)
+}
+
+
+
+
 #' Compute Pairwise Squared Distances
 #'
 #' This function computes the matrix of squared Euclidean distances

@@ -172,4 +172,4 @@ filled.contour(
   main = "Normalized Posterior Density (2D)"
 )
 ```
-
+ 

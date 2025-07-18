@@ -47,12 +47,12 @@ br <- boss(f1d, D = 1, method = 'modal',
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.71 seconds.
+#> Total time taken: 0.77 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0.02  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1 
 #> fill in: added 17 point(s).
-#> Final update completed in  0.04  seconds.
+#> Final update completed in  0.06  seconds.
 
 plot(br)
 ```
@@ -79,7 +79,7 @@ br <- compute_essential_support(br, alpha=0.05)
 br <- construct_essential_designs(br)
 br <- compute_fill_in(br)
 br <- fill_in(br, h = 0.1, verbose = 1, max_add = 100)
-#> fill in: added 19 point(s).
+#> fill in: added 20 point(s).
 br_update <- update_boss(br)
 plot(br_update)
 ```
@@ -137,7 +137,7 @@ br3 <- boss(f2d, D = 2, method = 'modal',
             alpha = 0.05, h = 0.1, verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 0.98 seconds.
+#> Total time taken: 0.93 seconds.
 #> Start updating Hessian at the mode...
 #> Hessian updated in  0.03  seconds.
 #> Stage 2: Fill-in to target spacing h =  0.1
@@ -148,7 +148,7 @@ br3 <- boss(f2d, D = 2, method = 'modal',
 #> Warning in (function (boss_result, h, max_add = 100, n_sample_max = 10000, :
 #> Updated fill-in distance is (0.446202) > target h (0.100000); Adjust your
 #> expectation by either increasing max_add and n_sample_max or increasing h.
-#> Final update completed in  0.59  seconds.
+#> Final update completed in  0.56  seconds.
 plot(br3)
 ```
 
@@ -174,7 +174,7 @@ br3 <- BOSS_modal(func = f2d, D = 2,
                         verbose = 1)
 #> Stage 1: Bayesian Optimization via Mode-Seeking Surrogate (BOSS) started.
 #> Stage 1: BOSS finished.
-#> Total time taken: 1.12 seconds.
+#> Total time taken: 1.04 seconds.
 
 br3 <- update_hessian(br3)
 br3 <- compute_essential_support(br3, alpha = 0.05)

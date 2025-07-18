@@ -330,6 +330,9 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 #'     \item{\code{objective_function}}{Callable to evaluate new design points.}
 #'     \item{\code{gp_params}}{Includes \code{noise_var}, \code{nu}, \code{quad} flag, etc.}
 #'   }
+#' @param hess_opts List of options for \code{update_hessian()}. Any of
+#'   \code{approach}, \code{GP.refine.eps}, \code{num.args}, \code{tol}.
+#'
 #'
 #' @return The updated \code{boss_result}, with:
 #'   \describe{
@@ -340,7 +343,8 @@ fill_in <- function(boss_result, h, max_add = 100, n_sample_max = 10000, verbose
 #'   }
 #'
 #' @export
-update_boss <- function(boss_result) {
+update_boss <- function(boss_result, hess_opts = list()) {
+  hess_opts <- setup_hess_opts(hess_opts)
   D <- boss_result$D
   ## 1) Fill missing y's in essential_design_points
   ed <- boss_result$essential_design_points
@@ -363,7 +367,9 @@ update_boss <- function(boss_result) {
       y = ed$y
     )
     ## 3) Update mode and Hessian
-    boss_result <- update_hessian(boss_result)
+    boss_result <- do.call(update_hessian,
+                                     c(list(boss_result = boss_result),
+                                       hess_opts))
   }
   else{
     old_dp <- boss_result$design_points
