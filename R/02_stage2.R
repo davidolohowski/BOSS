@@ -371,8 +371,8 @@ update_boss <- function(boss_result) {
     newdata <- unique(cbind(rbind(ed$x_original, old_dp$x_original), y = c(ed$y, old_dp$y)))
 
     boss_result$design_points <- list(
-      x_original = newdata[,-ncol(newdata)],
-      x = sweep(sweep(newdata[,-ncol(newdata)], 2, boss_result$lower, "-"), 2,
+      x_original = newdata[,-ncol(newdata), drop = F],
+      x = sweep(sweep(newdata[,-ncol(newdata), drop = F], 2, boss_result$lower, "-"), 2,
                 boss_result$upper - boss_result$lower, '/'),
       y = newdata[,ncol(newdata)])
   }
