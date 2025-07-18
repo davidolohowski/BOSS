@@ -6,11 +6,11 @@
     }
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Add normalized posterior to boss object — get_normalized_posterior"><meta name="description" content="Given a boss object with a surrogate log-density function and precomputed essential support,
-this function estimates the normalization constant (either numerically or via Monte Carlo)
+this function estimates the normalization constant (via numeric, Monte Carlo, or AGHQ integration)
 and adds a normalized posterior density function as a new attribute in the boss object.
 It assumes that boss$essential_support$H is the Hessian of the log-posterior (negative definite at the mode).
 All internal computations automatically negate it to get the positive-definite precision approximation."><meta property="og:description" content="Given a boss object with a surrogate log-density function and precomputed essential support,
-this function estimates the normalization constant (either numerically or via Monte Carlo)
+this function estimates the normalization constant (via numeric, Monte Carlo, or AGHQ integration)
 and adds a normalized posterior density function as a new attribute in the boss object.
 It assumes that boss$essential_support$H is the Hessian of the log-posterior (negative definite at the mode).
 All internal computations automatically negate it to get the positive-definite precision approximation."></head><body>
@@ -21,7 +21,7 @@ All internal computations automatically negate it to get the positive-definite p
 
     <a class="navbar-brand me-2" href="../index.html">BOSS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,9 +47,9 @@ All internal computations automatically negate it to get the positive-definite p
 
     <div class="ref-description section level2">
     <p>Given a boss object with a surrogate log-density function and precomputed essential support,
-this function estimates the normalization constant (either numerically or via Monte Carlo)
+this function estimates the normalization constant (via numeric, Monte Carlo, or AGHQ integration)
 and adds a normalized posterior density function as a new attribute in the boss object.</p>
-<p>It assumes that boss$essential_support$H is the Hessian of the log-posterior (negative definite at the mode).
+<p>It assumes that <code>boss$essential_support$H</code> is the Hessian of the log-posterior (negative definite at the mode).
 All internal computations automatically negate it to get the positive-definite precision approximation.</p>
     </div>
 
@@ -57,8 +57,11 @@ All internal computations automatically negate it to get the positive-definite p
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_normalized_posterior</span><span class="op">(</span></span>
 <span>  <span class="va">boss</span>,</span>
-<span>  int_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"numeric"</span>, <span class="st">"mc"</span><span class="op">)</span>,</span>
+<span>  int_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"numeric"</span>, <span class="st">"mc"</span>, <span class="st">"aghq"</span><span class="op">)</span>,</span>
 <span>  nsamples <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>  aghq_K <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  aghq_startingvalue <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  truncate_posterior <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -68,20 +71,32 @@ All internal computations automatically negate it to get the positive-definite p
 
 
 <dl><dt id="arg-boss">boss<a class="anchor" aria-label="anchor" href="#arg-boss"></a></dt>
-<dd><p>A boss object with at least $surrogate (log-density function), $D (dimension),
-and $essential_support (computed by compute_essential_support()).</p></dd>
+<dd><p>A boss object with at least <code>$surrogate</code> (log-density function), <code>$D</code> (dimension),
+and <code>$essential_support</code> (computed by <code><a href="compute_essential_support.html">compute_essential_support()</a></code>).</p></dd>
 
 
 <dt id="arg-int-method">int_method<a class="anchor" aria-label="anchor" href="#arg-int-method"></a></dt>
-<dd><p>Integration method. One of "numeric" (1D only) or "mc".</p></dd>
+<dd><p>Integration method. One of <code>"numeric"</code> (1D only), "<code>mc</code>", or "<code>aghq</code>".</p></dd>
 
 
 <dt id="arg-nsamples">nsamples<a class="anchor" aria-label="anchor" href="#arg-nsamples"></a></dt>
 <dd><p>Number of samples to use for Monte Carlo integration (default 10000).</p></dd>
 
 
+<dt id="arg-aghq-k">aghq_K<a class="anchor" aria-label="anchor" href="#arg-aghq-k"></a></dt>
+<dd><p>Number of quadrature points for AGHQ (default 4).</p></dd>
+
+
+<dt id="arg-aghq-startingvalue">aghq_startingvalue<a class="anchor" aria-label="anchor" href="#arg-aghq-startingvalue"></a></dt>
+<dd><p>Starting value in transformed y-space for AGHQ (optional).</p></dd>
+
+
+<dt id="arg-truncate-posterior">truncate_posterior<a class="anchor" aria-label="anchor" href="#arg-truncate-posterior"></a></dt>
+<dd><p>Whether to truncate the posterior to have zero mass outside the essential support.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to integrate() in numeric mode.</p></dd>
+<dd><p>Additional arguments passed to <code><a href="https://rdrr.io/r/stats/integrate.html" class="external-link">integrate()</a></code> (for <code>"numeric"</code>) or <code><a href="aghq_bounded.html">aghq_bounded()</a></code> (for <code>"aghq"</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
