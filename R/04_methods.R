@@ -218,9 +218,9 @@ plot.boss <- function(x,
 
     if (length(lower) == 1) {
 
-      plot(c(left, right), c(0, 0), type = "n", yaxt = "n",
+      plot(c(lower, upper), c(0, 0), type = "n", yaxt = "n",
            xlab = "x", ylab = "", main = "Essential Support & Points")
-      segments(x0 = left, y0 = 0, x1 = right, y1 = 0, lwd = 3)
+      segments(x0 = lower, y0 = 0, x1 = upper, y1 = 0, lwd = 3)
 
       ed_x <- x$essential_design_points$x_original
       tick_h <- 0.1

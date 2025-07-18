@@ -792,7 +792,12 @@ BOSS_mcmc <- function(func,
       D = D) + rel
   }
 
-  MCMC_sample <- t(apply(MCMC_sample, 1, function(x) x*(original_upper - original_lower) + original_lower))
+  if(D > 1){
+    MCMC_sample <- t(apply(MCMC_sample, 1, function(x) x*(original_upper - original_lower) + original_lower))
+  }
+  else{
+    MCMC_sample <- MCMC_sample*(original_upper - original_lower) + original_lower
+  }
 
   boss_result <- structure(list(
     objective_function = func, D = D,
