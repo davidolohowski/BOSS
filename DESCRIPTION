@@ -1,13 +1,13 @@
 Package: BOSS
 Type: Package
 Title: Fast Approximate Bayesian Inference through Bayesian Optimization Sequential Surrogate (BOSS)
-Version: 0.1.30
+Version: 0.1.31
 Authors@R: c(person("Dayi","Li",role=c("aut")),
              person("Ziyi","Liu",role="aut"),
 	      person("Ziang","Zhang",role=c("aut","cre"),
 		    email = "aguero.zhang@gmail.com"))
 Description: R Package for Bayesian Optimization Sequential Surrogate.
-Imports: stats, MASS, lhs, numDeriv, optimx, fields, randtoolbox, coda
+Imports: stats, MASS, lhs, numDeriv, optimx, fields, randtoolbox, coda, aghq
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true

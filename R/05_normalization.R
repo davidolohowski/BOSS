@@ -4,19 +4,21 @@
 #' this function estimates the normalization constant (via numeric, Monte Carlo, or AGHQ integration)
 #' and adds a normalized posterior density function as a new attribute in the boss object.
 #'
-#' It assumes that boss$essential_support$H is the Hessian of the log-posterior (negative definite at the mode).
+#' It assumes that \code{boss$essential_support$H} is the Hessian of the log-posterior (negative definite at the mode).
 #' All internal computations automatically negate it to get the positive-definite precision approximation.
 #'
-#' @param boss A boss object with at least $surrogate (log-density function), $D (dimension),
-#'   and $essential_support (computed by compute_essential_support()).
-#' @param int_method Integration method. One of "numeric" (1D only), "mc", or "aghq".
+#' @param boss A boss object with at least \code{$surrogate} (log-density function), \code{$D} (dimension),
+#'   and \code{$essential_support} (computed by \code{compute_essential_support()}).
+#' @param int_method Integration method. One of \code{"numeric"} (1D only), "\code{mc}", or "\code{aghq}".
 #' @param nsamples Number of samples to use for Monte Carlo integration (default 10000).
 #' @param aghq_K Number of quadrature points for AGHQ (default 4).
 #' @param aghq_startingvalue Starting value in transformed y-space for AGHQ (optional).
 #' @param truncate_posterior Whether to truncate the posterior to have zero mass outside the essential support.
-#' @param ... Additional arguments passed to `integrate()` (for "numeric") or `aghq_bounded()` (for "aghq").
+#' @param ... Additional arguments passed to \code{integrate()} (for \code{"numeric"}) or \code{aghq_bounded()} (for \code{"aghq"}).
 #'
 #' @return The updated boss object with $normalized_posterior attribute.
+#'
+#' @import aghq
 #' @export
 get_normalized_posterior <- function(
     boss,
@@ -217,9 +219,9 @@ get_normalized_posterior <- function(
 #' Approximates the log normalizing constant of a function defined on a bounded domain
 #' [lower, upper]^D by applying a change-of-variable to the real line and using AGHQ.
 #'
-#' @param log_f Function taking a vector x ∈ [lower, upper]^D and returning log-density.
+#' @param log_f Function taking a vector \eqn{x \in [lower, upper]^D} and returning log-density.
 #' @param lower, upper Vectors of lower and upper bounds (length D).
-#' @param k Number of quadrature points per dimension (e.g., 3–15).
+#' @param k Number of quadrature points per dimension (e.g., 3-15).
 #' @param startingvalue Optional starting value in transformed y-space (default is 0).
 #' @return log normalizing constant (approximate)
 #' @importFrom aghq aghq
@@ -230,7 +232,7 @@ aghq_bounded <- function(log_f, lower, upper, k = 5, startingvalue = NULL) {
   D <- length(lower)
 
   if (D > 3) {
-    warning("aghq_bounded is only recommended for D ≤ 3 due to exponential growth of grid size.")
+    warning("aghq_bounded is only recommended for D <= 3 due to exponential growth of grid size.")
   }
 
   if (is.null(startingvalue)) {

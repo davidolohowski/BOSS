@@ -7,11 +7,11 @@
 aghq_bounded(log_f, lower, upper, k = 5, startingvalue = NULL)
 }
 \arguments{
-\item{log_f}{Function taking a vector x ∈ [lower, upper]^D and returning log-density.}
+\item{log_f}{Function taking a vector \eqn{x \in [lower, upper]^D} and returning log-density.}
 
 \item{lower, }{upper Vectors of lower and upper bounds (length D).}
 
-\item{k}{Number of quadrature points per dimension (e.g., 3–15).}
+\item{k}{Number of quadrature points per dimension (e.g., 3-15).}
 
 \item{startingvalue}{Optional starting value in transformed y-space (default is 0).}
 }

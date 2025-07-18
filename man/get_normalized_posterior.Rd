@@ -15,10 +15,10 @@ get_normalized_posterior(
 )
 }
 \arguments{
-\item{boss}{A boss object with at least $surrogate (log-density function), $D (dimension),
-and $essential_support (computed by compute_essential_support()).}
+\item{boss}{A boss object with at least \code{$surrogate} (log-density function), \code{$D} (dimension),
+and \code{$essential_support} (computed by \code{compute_essential_support()}).}
 
-\item{int_method}{Integration method. One of "numeric" (1D only), "mc", or "aghq".}
+\item{int_method}{Integration method. One of \code{"numeric"} (1D only), "\code{mc}", or "\code{aghq}".}
 
 \item{nsamples}{Number of samples to use for Monte Carlo integration (default 10000).}
 
@@ -28,7 +28,7 @@ and $essential_support (computed by compute_essential_support()).}
 
 \item{truncate_posterior}{Whether to truncate the posterior to have zero mass outside the essential support.}
 
-\item{...}{Additional arguments passed to `integrate()` (for "numeric") or `aghq_bounded()` (for "aghq").}
+\item{...}{Additional arguments passed to \code{integrate()} (for \code{"numeric"}) or \code{aghq_bounded()} (for \code{"aghq"}).}
 }
 \value{
 The updated boss object with $normalized_posterior attribute.
@@ -38,6 +38,6 @@ Given a boss object with a surrogate log-density function and precomputed essent
 this function estimates the normalization constant (via numeric, Monte Carlo, or AGHQ integration)
 and adds a normalized posterior density function as a new attribute in the boss object.
 
-It assumes that boss$essential_support$H is the Hessian of the log-posterior (negative definite at the mode).
+It assumes that \code{boss$essential_support$H} is the Hessian of the log-posterior (negative definite at the mode).
 All internal computations automatically negate it to get the positive-definite precision approximation.
 }

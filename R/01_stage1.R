@@ -459,7 +459,12 @@ BOSS_mcmc <- function(func,
   }
 
   initial <- lhs::randomLHS(initial_design, D)
-  initial <- t(apply(initial, 1, function(x) x*(original_upper - original_lower) + original_lower))
+  if(D > 1){
+    initial <- t(apply(initial, 1, function(x) x*(original_upper - original_lower) + original_lower))
+  }
+  else{
+    initial <- initial*(original_upper - original_lower) + original_lower
+  }
 
   for (i in 1:nrow(initial)) {
     xmat_trans <- rbind(xmat_trans, (initial[i,] - original_lower) / (original_upper - original_lower))
@@ -485,6 +490,7 @@ BOSS_mcmc <- function(func,
   current_signal_var <- compute_like(length_scale = NULL, y = yvec, x = xmat_trans,
                                      noise_var = noise_var,
                                      D, quad = quad, nu = nu)
+
   lik <- opt$value
   if (verbose == 3){
     cat("    GP log likelihood:", lik, "\n")
@@ -640,8 +646,14 @@ BOSS_mcmc <- function(func,
       # For acquisition, we sample candidates from the current search region.
       # When normalizing for the GP, we always use the original bounds.
       init_point <- lhs::randomLHS(optim.n, D)
-      init_point <- t(apply(init_point, 1, function(x) x*(upper_current - lower_current) + lower_current))
-      init_point_trans <- t(apply(init_point, 1, function(x) (x - original_lower)/(original_upper - original_lower)))
+      if(D > 1){
+        init_point <- t(apply(init_point, 1, function(x) x*(upper_current - lower_current) + lower_current))
+        init_point_trans <- t(apply(init_point, 1, function(x) (x - original_lower)/(original_upper - original_lower)))
+      }
+      else{
+        init_point <- init_point*(upper_current - lower_current) + lower_current
+        init_point_trans <- (init_point - original_lower)/(original_upper - original_lower)
+      }
 
       if (verbose == 3) {
         cat("  Maximizing Acquisition Function...\n")
@@ -658,8 +670,8 @@ BOSS_mcmc <- function(func,
       next_point_trans <- unlist(unname(unique(optimizer[which.min(optimizer$value), c(1:D)])))
     }
     else{
-      thinned <- unique(MCMC_sample[-c(1:1000),])
-      s_thinned <- thinned[sample(1:nrow(thinned), explore_size),]
+      thinned <- unique(MCMC_sample[-c(1:1000), , drop = F])
+      s_thinned <- thinned[sample(1:nrow(thinned), explore_size), , drop = F]
 
       if (verbose == 3) {
         cat("  Maximizing Acquisition Function...\n")
@@ -797,7 +809,6 @@ BOSS_mcmc <- function(func,
 
   return(boss_result)
 }
-
 
 #' Update Mode Hessian for a \code{boss_modal} Object (with PSD check)
 #'
